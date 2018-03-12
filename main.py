@@ -11,12 +11,9 @@ from PySide.QtGui import *
 from PySide.QtDeclarative import *
 from PySide.QtGui import QDesktopServices as QDS
 
-# import math
+import math
 import platform
-import time
-import datetime
 import os
-import string
 import ConfigParser
 # import gconf
 
@@ -24,8 +21,6 @@ import ConfigParser
 from datetime import tzinfo, timedelta, datetime
 import logging
 logger = logging.getLogger(__name__)
-
-import math
 
 
 def is_numeric(item):
@@ -70,7 +65,8 @@ class RpnApp(QApplication):
         self.stack = []
         self.lastx = 0
         self.istyping = False
-
+        self.errored = False
+            
     def get_x(self):
         if self.istyping is not False:
             x = float(self.istyping)
@@ -78,6 +74,11 @@ class RpnApp(QApplication):
         else:
             x = self.stack.pop()
         return x
+
+    def stop_typing(self):
+        if self.istyping is not False:
+            self.stack.append(float(self.istyping))
+            self.istyping = False
     
     @Slot(result=str)
     def get_lastx(self):
@@ -88,6 +89,10 @@ class RpnApp(QApplication):
     @Slot(result=str)
     def add(self):
         "Add two digits"
+        self.stop_typing()
+        if len(self.stack) < 2:
+            self.errored = True
+            return "too few operators"
         self.lastx = self.get_x()
         self.stack.append(self.stack.pop() + self.lastx)
         return str(self.stack[-1])
@@ -95,6 +100,10 @@ class RpnApp(QApplication):
     @Slot(result=str)
     def subtract(self):
         "Substract two digits"
+        self.stop_typing()
+        if len(self.stack) < 2:
+            self.errored = True
+            return "too few operators"
         self.lastx = self.get_x()
         self.stack.append(self.stack.pop() - self.lastx)
         return str(self.stack[-1])
@@ -102,6 +111,10 @@ class RpnApp(QApplication):
     @Slot(result=str)
     def multiply(self):
         "Multiply two digits"
+        self.stop_typing()
+        if len(self.stack) < 2:
+            self.errored = True
+            return "too few operators"
         self.lastx = self.get_x()
         self.stack.append(self.stack.pop() * self.lastx)
         return str(self.stack[-1])
@@ -109,21 +122,30 @@ class RpnApp(QApplication):
     @Slot(result=str)
     def divide(self):
         "Divide two digits"
+        self.stop_typing()
+        if len(self.stack) < 2:
+            self.errored = True
+            return "too few operators"
         self.lastx = self.get_x()
         try:
             self.stack.append(self.stack.pop() / self.lastx)
         except ZeroDivisionError:
+            self.errored = True
             return "divide: Division by Zero"
         return str(self.stack[-1])
 
     @Slot(result=str)
     def drop(self):
         "Drop the last inserted item out of the stack"
+        if self.errored:
+            self.errored = False
+            return str(self.stack[-1])
         if self.istyping is not False:
             self.istyping = self.istyping[:-1]
             return self.istyping
         else:
             if not self.stack:
+                self.errored = True
                 return "drop: empty stack"
             self.stack.pop()
             return str(self.stack[-1])
@@ -135,36 +157,50 @@ class RpnApp(QApplication):
 
     def e(self):
         "Put 'e' constant in the stack"
-        self.istyping = False
+        self.stop_typing()
         self.stack.append(math.e)
         return str(self.stack[-1])
 
     def pi(self):
         "Put 'pi' constant in the stack"
-        self.istyping = False
+        self.stop_typing()
         self.stack.append(math.pi)
         return str(self.stack[-1])
 
     @Slot(result=str)
     def sqrt(self):
         "Extract the square root of the digit"
+        self.stop_typing()
+        if len(self.stack) < 1:
+            self.errored = True
+            return "too few operators"
         self.lastx = self.get_x()
         try:
             self.stack.append(math.sqrt(self.lastx))
         except ValueError as e:
-            "sqrt: Invalid value %s" % e
+            self.errored = True
+            self.stack.append(self.lastx)
+            return "sqrt: Invalid value %s" % e
         return str(self.stack[-1])
 
     @Slot(result=str)
-    def power(self, digit1, digit2):
-        "Raise the digit2 to the power of the digit1"
+    def power(self):
+        "Raise y to the power of x"
+        self.stop_typing()
+        if len(self.stack) < 2:
+            self.errored = True
+            return "too few operators"
         self.lastx = self.get_x()
-        self.stack.append(self.stack.pop() ** self.lastx)
+        self.stack.append(math.pow(self.stack.pop(), self.lastx))
         return str(self.stack[-1])
 
     @Slot(result=str)
     def swap(self):
         "Swap the last two items in the stack"
+        self.stop_typing()
+        if len(self.stack) < 2:
+            self.errored = True
+            return "too few operators"
         x = self.get_x()
         y = self.stack.pop()
         self.stack.append(x)
@@ -181,6 +217,9 @@ class RpnApp(QApplication):
                 self.istyping = '-' + self.istyping
             return self.istyping
         else:
+            if len(self.stack) < 1:
+                self.errored = True
+                return "too few operators"
             x = -self.stack.pop()
             self.stack.append(x)
             return str(self.stack[-1])
@@ -189,6 +228,9 @@ class RpnApp(QApplication):
     def dup(self):
         "Duplicates the last item in the stack"
         if self.istyping is False:
+            if len(self.stack) < 1:
+                self.errored = True
+                return "too few operators"
             x = self.stack[-1]
         else:
             x = self.get_x()
