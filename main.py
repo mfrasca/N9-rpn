@@ -77,8 +77,13 @@ class RpnApp(QApplication):
             self.istyping = False
         else:
             x = self.stack.pop()
-        print x
         return x
+    
+    @Slot(result=str)
+    def get_lastx(self):
+        "Retrieve the last used x"
+        self.stack.append(self.lastx)
+        return str(self.stack[-1])
     
     @Slot(result=str)
     def add(self):
@@ -160,11 +165,11 @@ class RpnApp(QApplication):
     @Slot(result=str)
     def swap(self):
         "Swap the last two items in the stack"
-        self.lastx = self.get_x()
+        x = self.get_x()
         y = self.stack.pop()
         self.stack.append(x)
         self.stack.append(y)
-        return str(self.stack[-1])
+        return str(y)
 
     @Slot(result=str)
     def chs(self):

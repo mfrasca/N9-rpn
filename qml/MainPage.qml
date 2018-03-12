@@ -45,6 +45,46 @@ Page {
             width: current.width
             height: width / 5
         }
+
+        Row {
+            id: row_0
+            Button {
+                text: "(f)"
+                font.pixelSize: 32
+                width: current.width / 4
+                height: width
+                onClicked: {
+                }
+            }
+            Button {
+                text: "e^x"
+                font.pixelSize: 32
+                width: current.width / 4
+                height: width
+                onClicked: {
+                }
+            }
+            Button {
+                text: "y^x"
+                font.pixelSize: 32
+                width: current.width / 4
+                height: width
+                onClicked: {
+                    display_x.text = app.power()
+                }
+            }
+            Button {
+                text: "lastx"
+                font.pixelSize: 32
+                font.bold: true;
+                width: current.width / 4
+                height: width
+                onClicked: {
+                    display_x.text = app.get_lastx()
+                }
+            }
+        }
+
         Row {
             id: row_1
             Button {
@@ -76,7 +116,7 @@ Page {
                 }
             }
         }
-
+        
         Row {
             id: row_2
             Button {
