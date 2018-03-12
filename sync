@@ -1,0 +1,3 @@
+#!/bin/bash
+scp main.py theresia:rpncalc
+scp qml/*.qml theresia:rpncalc/qml
