@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 ##############################################################################################
 # Copyright (c) by Mario Frasca (2018)
 # License:     GPL3
@@ -169,6 +170,57 @@ class RpnApp(QApplication):
             self.istyping = False
             return str(self.stack[-1])
 
+    @Slot(str, result=str)
+    def execute(self, name):
+        self.stop_typing()
+        self.shift = 0
+        name = {'%': 'take_percent',
+                '%T': 'percent_of_total',
+                u'Δ%': 'percent_difference',
+                u'x²': 'square',
+                'R^': 'stack_up', 
+                'RDN': 'stack_down', 
+                'e^x': 'exponential', 
+                'y^x': 'power', }.get(name, name)
+        return getattr(self, name)()
+
+    def take_percent(self):
+        if len(self.stack) < 2:
+            self.errored = True
+            return "too few operators"
+        self.lastx = self.stack.pop()
+        total = self.stack.pop()
+        self.stack.append(total / 100.0 * self.lastx)
+        return str(self.stack[-1])
+
+    def percent_of_total(self):
+        if len(self.stack) < 2:
+            self.errored = True
+            return "too few operators"
+        self.lastx = self.stack.pop()
+        total = self.stack.pop()
+        self.stack.append(100.0 * self.lastx / total)
+        return str(self.stack[-1])
+
+    def percent_difference(self):
+        if len(self.stack) < 2:
+            self.errored = True
+            return "too few operators"
+        self.lastx = self.stack.pop()
+        total = self.stack.pop()
+        self.stack.append(100.0 * (total - self.lastx) / total)
+        return str(self.stack[-1])
+    
+    def stack_up(self):
+        x = self.stack.pop()
+        self.stack.insert(0, x)
+        return str(self.stack[-1])
+
+    def stack_down(self):
+        x = self.stack.pop(0)
+        self.stack.append(x)
+        return str(self.stack[-1])
+        
     def clear(self):
         "Clear the stack"
         self.stack = []
@@ -200,6 +252,17 @@ class RpnApp(QApplication):
             self.errored = True
             self.stack.append(self.lastx)
             return "sqrt: Invalid value %s" % e
+        return str(self.stack[-1])
+
+    @Slot(result=str)
+    def square(self):
+        "Extract the square root of the digit"
+        self.stop_typing()
+        if len(self.stack) < 1:
+            self.errored = True
+            return "too few operators"
+        self.lastx = self.get_x()
+        self.stack.append(self.lastx * self.lastx)
         return str(self.stack[-1])
 
     @Slot(result=str)
@@ -260,7 +323,8 @@ class RpnApp(QApplication):
     def type_a_digit(self, digit):
         if self.istyping is False:
             self.istyping = ''
-        self.istyping += digit
+        if digit != '.' or '.' not in self.istyping:
+            self.istyping += digit
         return(self.istyping)
 
     def finished(self):
