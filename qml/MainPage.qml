@@ -43,8 +43,8 @@ Page {
         } else { // landscape
             button_height = 112
             button_width = 122
-            key_7.anchors.top = display_x.top
-            key_7.anchors.left = display_x.right
+            key_7.anchors.top = display_box.top
+            key_7.anchors.left = display_box.right
             key_divide.anchors.left = key_enter.left
             key_divide.anchors.top = key_enter.bottom
             key_multiply.anchors.left = key_divide.right
@@ -60,14 +60,22 @@ Page {
     property int button_height: 120
     property int button_width: 120
 
-    Text {
-        id: display_x
-        font.pixelSize: 48
+    Row {
+        id: display_box
         width: button_width * 4
         height: button_height
         anchors {
             left: parent.left
             top: parent.top
+        }
+        Text {
+            id: display_value
+            font.pixelSize: 48
+            anchors {
+                left: parent.left
+                leftMargin: 6
+                verticalCenter: parent.verticalCenter
+            }
         }
     }
 
@@ -80,8 +88,8 @@ Page {
         onClicked: {
         }
         anchors {
-            left: display_x.left
-            top: display_x.bottom
+            left: display_box.left
+            top: display_box.bottom
         }
     }
     Button {
@@ -104,7 +112,7 @@ Page {
         width: button_width
         height: button_height
         onClicked: {
-            display_x.text = app.power()
+            display_value.text = app.power()
         }
         anchors {
             left: key_antilog.right
@@ -119,7 +127,7 @@ Page {
         width: button_width
         height: button_height
         onClicked: {
-            display_x.text = app.get_lastx()
+            display_value.text = app.get_lastx()
         }
         anchors {
             left: key_power.right
@@ -133,7 +141,7 @@ Page {
         width: button_width * 2
         height: button_height
         onClicked: {
-            display_x.text = app.dup()
+            display_value.text = app.dup()
         }
         anchors {
             left: key_second.left
@@ -147,7 +155,7 @@ Page {
         width: button_width
         height: button_height
         onClicked: {
-            display_x.text = app.swap()
+            display_value.text = app.swap()
         }
         anchors {
             left: key_enter.right
@@ -162,7 +170,7 @@ Page {
         width: button_width
         height: button_height
         onClicked: {
-            display_x.text = app.drop()
+            display_value.text = app.drop()
         }
         anchors {
             left: key_swap.right
@@ -176,7 +184,7 @@ Page {
         width: button_width
         height: button_height
         onClicked: {
-            display_x.text = app.type_a_digit(text)
+            display_value.text = app.type_a_digit(text)
         }
         anchors {
             left: key_enter.left
@@ -190,7 +198,7 @@ Page {
         width: button_width
         height: button_height
         onClicked: {
-            display_x.text = app.type_a_digit(text)
+            display_value.text = app.type_a_digit(text)
         }
         anchors {
             left: key_7.right
@@ -204,7 +212,7 @@ Page {
         width: button_width
         height: button_height
         onClicked: {
-            display_x.text = app.type_a_digit(text)
+            display_value.text = app.type_a_digit(text)
         }
         anchors {
             left: key_8.right
@@ -218,7 +226,7 @@ Page {
         width: button_width
         height: button_height
         onClicked: {
-            display_x.text = app.divide()
+            display_value.text = app.divide()
         }
         anchors {
             left: key_9.right
@@ -232,7 +240,7 @@ Page {
         width: button_width
         height: button_height
         onClicked: {
-            display_x.text = app.type_a_digit(text)
+            display_value.text = app.type_a_digit(text)
         }
         anchors {
             left: key_7.left
@@ -246,7 +254,7 @@ Page {
         width: button_width
         height: button_height
         onClicked: {
-            display_x.text = app.type_a_digit(text)
+            display_value.text = app.type_a_digit(text)
         }
         anchors {
             left: key_4.right
@@ -260,7 +268,7 @@ Page {
         width: button_width
         height: button_height
         onClicked: {
-            display_x.text = app.type_a_digit(text)
+            display_value.text = app.type_a_digit(text)
         }
         anchors {
             left: key_5.right
@@ -274,7 +282,7 @@ Page {
         width: button_width
         height: button_height
         onClicked: {
-            display_x.text = app.multiply()
+            display_value.text = app.multiply()
         }
         anchors {
             left: key_6.right
@@ -288,7 +296,7 @@ Page {
         width: button_width
         height: button_height
         onClicked: {
-            display_x.text = app.type_a_digit(text)
+            display_value.text = app.type_a_digit(text)
         }
         anchors {
             left: key_4.left
@@ -302,7 +310,7 @@ Page {
         width: button_width
         height: button_height
         onClicked: {
-            display_x.text = app.type_a_digit(text)
+            display_value.text = app.type_a_digit(text)
         }
         anchors {
             left: key_1.right
@@ -316,7 +324,7 @@ Page {
         width: button_width
         height: button_height
         onClicked: {
-            display_x.text = app.type_a_digit(text)
+            display_value.text = app.type_a_digit(text)
         }
         anchors {
             left: key_2.right
@@ -330,7 +338,7 @@ Page {
         width: button_width
         height: button_height
         onClicked: {
-            display_x.text = app.subtract()
+            display_value.text = app.subtract()
         }
         anchors {
             left: key_3.right
@@ -344,7 +352,7 @@ Page {
         width: button_width
         height: button_height
         onClicked: {
-            display_x.text = app.type_a_digit(text)
+            display_value.text = app.type_a_digit(text)
         }
         anchors {
             left: key_1.left
@@ -358,7 +366,7 @@ Page {
         width: button_width
         height: button_height
         onClicked: {
-            display_x.text = app.type_a_digit(text)
+            display_value.text = app.type_a_digit(text)
         }
         anchors {
             left: key_0.right
@@ -372,7 +380,7 @@ Page {
         width: button_width
         height: button_height
         onClicked: {
-            display_x.text = app.chs()
+            display_value.text = app.chs()
         }
         anchors {
             left: key_dot.right
@@ -386,7 +394,7 @@ Page {
         width: button_width
         height: button_height
         onClicked: {
-            display_x.text = app.add()
+            display_value.text = app.add()
         }
         anchors {
             left: key_chs.right
