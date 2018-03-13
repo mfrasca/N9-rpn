@@ -28,16 +28,14 @@ Page {
     
     function displayOrientationChanged() {
         if (width < 600) { // portrait
-            button_height = (854 - 35) / 9
-            kpbutton_height = (854 - 35) / 9
+            button_height = (854 - 35) / 10
             button_width = 480 / 5
             kpbutton_width = 480 / 4
             key_enter.anchors.top = key_31.bottom
             key_enter.anchors.left = key_31.left
             console.log("[QML INFO] Portrait")
         } else { // landscape
-            button_height = (480 - 35) / 4
-            kpbutton_height = (480 - 35) / 5
+            button_height = (480 - 35) / 5
             button_width = 854 / 9
             kpbutton_width = 854 / 9
             key_enter.anchors.top = display_box.top
@@ -46,9 +44,33 @@ Page {
         }
     }
 
+    function press_a_digit(text) {
+        if (text == '.') {
+            display_fgh.text = ''
+        }
+        switch (display_fgh.text) {
+            
+        case '': {
+            display_value.text = app.type_a_digit(text)
+        } break;
+            
+        case 'f': {
+            display_value.text = app.fix(text)
+            display_fgh.text = app.shift_status('')
+            shift_keys()
+        } break;
+            
+        case 'g': {
+            display_value.text = app.sci(text)
+            display_fgh.text = app.shift_status('')
+            shift_keys()
+        } break;
+            
+        }
+    }
+    
     property int button_height: 120
     property int button_width: 120
-    property int kpbutton_height: 120
     property int kpbutton_width: 120
 
     function shift_keys() {
@@ -57,23 +79,23 @@ Page {
             key_13.text = "x²"
             key_14.text = "y^x"
             key_15.text = "ln"
-            key_21.text = "%"
-            key_22.text = ""
+            key_21.text = "lastx"
+            key_22.text = "%"
             key_23.text = "sin"
             key_24.text = "cos"
             key_25.text = "tan"
             key_31.text = ""
             key_32.text = ""
             key_33.text = ""
-            key_34.text = ""
-            key_35.text = "R^"
+            key_34.text = "1/x"
+            key_35.text = "RDN"
             break;
         case 'f':
             key_13.text = "sqrt"
             key_14.text = ""
             key_15.text = "e^x"
-            key_21.text = "Δ%"
-            key_22.text = ""
+            key_21.text = "lastx"
+            key_22.text = "Δ%"
             key_23.text = "asin"
             key_24.text = "acos"
             key_25.text = "atan"
@@ -86,9 +108,9 @@ Page {
         case 'g':
             key_13.text = "y^x"
             key_14.text = ""
-            key_15.text = "log"
-            key_21.text = "%T"
-            key_22.text = ""
+            key_15.text = "π"
+            key_21.text = "lastx"
+            key_22.text = "%T"
             key_23.text = "sinh"
             key_24.text = "cosh"
             key_25.text = "tanh"
@@ -96,7 +118,7 @@ Page {
             key_32.text = ""
             key_33.text = ""
             key_34.text = ""
-            key_35.text = "R^"
+            key_35.text = "RDN"
             break;
         }
     }
@@ -104,7 +126,7 @@ Page {
     Row {
         id: display_box
         width: button_width * 5
-        height: button_height
+        height: button_height * 2
         anchors {
             left: parent.left
             top: parent.top
@@ -142,12 +164,12 @@ Page {
 
     Button {
         id: key_11
-        text: "f/g"
+        text: "f"
         font.pixelSize: 26
         width: button_width
         height: button_height
         onClicked: {
-            display_fgh.text = app.shift_status()
+            display_fgh.text = app.shift_status('f')
             shift_keys()
         }
         anchors {
@@ -157,12 +179,13 @@ Page {
     }
     Button {
         id: key_12
-        text: "°DG"
+        text: "g"
         font.pixelSize: 26
         width: button_width
         height: button_height
         onClicked: {
-            display_grad.text = app.grad_status()
+            display_fgh.text = app.shift_status('g')
+            shift_keys()
         }
         anchors {
             left: key_11.right
@@ -177,6 +200,8 @@ Page {
         height: button_height
         onClicked: {
             display_value.text = app.execute(text)
+            display_fgh.text = app.shift_status('')
+            shift_keys()
         }
         anchors {
             left: key_12.right
@@ -191,6 +216,8 @@ Page {
         height: button_height
         onClicked: {
             display_value.text = app.execute(text)
+            display_fgh.text = app.shift_status('')
+            shift_keys()
         }
         anchors {
             left: key_13.right
@@ -206,6 +233,8 @@ Page {
         height: button_height
         onClicked: {
             display_value.text = app.execute(text)
+            display_fgh.text = app.shift_status('')
+            shift_keys()
         }
         anchors {
             left: key_14.right
@@ -219,6 +248,8 @@ Page {
         height: button_height
         onClicked: {
             display_value.text = app.execute(text)
+            display_fgh.text = app.shift_status('')
+            shift_keys()
         }
         anchors {
             left: key_11.left
@@ -232,6 +263,8 @@ Page {
         height: button_height
         onClicked: {
             display_value.text = app.execute(text)
+            display_fgh.text = app.shift_status('')
+            shift_keys()
         }
         anchors {
             left: key_21.right
@@ -245,6 +278,8 @@ Page {
         height: button_height
         onClicked: {
             display_value.text = app.execute(text)
+            display_fgh.text = app.shift_status('')
+            shift_keys()
         }
         anchors {
             left: key_22.right
@@ -258,6 +293,8 @@ Page {
         height: button_height
         onClicked: {
             display_value.text = app.execute(text)
+            display_fgh.text = app.shift_status('')
+            shift_keys()
         }
         anchors {
             left: key_23.right
@@ -273,6 +310,8 @@ Page {
         height: button_height
         onClicked: {
             display_value.text = app.execute(text)
+            display_fgh.text = app.shift_status('')
+            shift_keys()
         }
         anchors {
             left: key_24.right
@@ -314,6 +353,8 @@ Page {
         height: button_height
         onClicked: {
             display_value.text = app.execute(text)
+            display_fgh.text = app.shift_status('')
+            shift_keys()
         }
         anchors {
             left: key_32.right
@@ -328,6 +369,8 @@ Page {
         height: button_height
         onClicked: {
             display_value.text = app.execute(text)
+            display_fgh.text = app.shift_status('')
+            shift_keys()
         }
         anchors {
             left: key_33.right
@@ -343,6 +386,8 @@ Page {
         height: button_height
         onClicked: {
             display_value.text = app.execute(text)
+            display_fgh.text = app.shift_status('')
+            shift_keys()
         }
         anchors {
             left: key_34.right
@@ -354,9 +399,11 @@ Page {
         text: "Enter"
         font.pixelSize: 26
         width: kpbutton_width * 2
-        height: kpbutton_height
+        height: button_height
         onClicked: {
             display_value.text = app.dup()
+            display_fgh.text = app.shift_status('')
+            shift_keys()
         }
         anchors {
             left: key_31.left
@@ -368,9 +415,11 @@ Page {
         text: "x⇄y"
         font.pixelSize: 26
         width: kpbutton_width
-        height: kpbutton_height
+        height: button_height
         onClicked: {
             display_value.text = app.swap()
+            display_fgh.text = app.shift_status('')
+            shift_keys()
         }
         anchors {
             left: key_enter.right
@@ -383,9 +432,11 @@ Page {
         font.pixelSize: 26
         font.bold: true;
         width: kpbutton_width
-        height: kpbutton_height
+        height: button_height
         onClicked: {
             display_value.text = app.drop()
+            display_fgh.text = app.shift_status('')
+            shift_keys()
         }
         anchors {
             left: key_43.right
@@ -397,20 +448,8 @@ Page {
         text: "7"
         font.pixelSize: 26
         width: kpbutton_width
-        height: kpbutton_height
-        onClicked: {
-            switch (display_fgh.text) {
-            case '':
-                display_value.text = app.type_a_digit(text)
-                break;
-            case 'f':
-                display_value.text = app.fix(text)
-                break;
-            case 'g':
-                display_value.text = app.sci(text)
-                break;
-            }
-        }
+        height: button_height
+        onClicked: { press_a_digit(text) }
         anchors {
             left: key_enter.left
             top: key_enter.bottom
@@ -421,20 +460,8 @@ Page {
         text: "8"
         font.pixelSize: 26
         width: kpbutton_width
-        height: kpbutton_height
-        onClicked: {
-            switch (display_fgh.text) {
-            case '':
-                display_value.text = app.type_a_digit(text)
-                break;
-            case 'f':
-                display_value.text = app.fix(text)
-                break;
-            case 'g':
-                display_value.text = app.sci(text)
-                break;
-            }
-        }
+        height: button_height
+        onClicked: {press_a_digit(text)}
         anchors {
             left: key_7.right
             top: key_7.top
@@ -445,20 +472,8 @@ Page {
         text: "9"
         font.pixelSize: 26
         width: kpbutton_width
-        height: kpbutton_height
-        onClicked: {
-            switch (display_fgh.text) {
-            case '':
-                display_value.text = app.type_a_digit(text)
-                break;
-            case 'f':
-                display_value.text = app.fix(text)
-                break;
-            case 'g':
-                display_value.text = app.sci(text)
-                break;
-            }
-        }
+        height: button_height
+        onClicked: {press_a_digit(text)}
         anchors {
             left: key_8.right
             top: key_7.top
@@ -469,9 +484,11 @@ Page {
         text: "÷"
         font.pixelSize: 26
         width: kpbutton_width
-        height: kpbutton_height
+        height: button_height
         onClicked: {
             display_value.text = app.divide()
+            display_fgh.text = app.shift_status('')
+            shift_keys()
         }
         anchors {
             left: key_9.right
@@ -483,20 +500,8 @@ Page {
         text: "4"
         font.pixelSize: 26
         width: kpbutton_width
-        height: kpbutton_height
-        onClicked: {
-            switch (display_fgh.text) {
-            case '':
-                display_value.text = app.type_a_digit(text)
-                break;
-            case 'f':
-                display_value.text = app.fix(text)
-                break;
-            case 'g':
-                display_value.text = app.sci(text)
-                break;
-            }
-        }
+        height: button_height
+        onClicked: {press_a_digit(text)}
         anchors {
             left: key_7.left
             top: key_7.bottom
@@ -507,20 +512,8 @@ Page {
         text: "5"
         font.pixelSize: 26
         width: kpbutton_width
-        height: kpbutton_height
-        onClicked: {
-            switch (display_fgh.text) {
-            case '':
-                display_value.text = app.type_a_digit(text)
-                break;
-            case 'f':
-                display_value.text = app.fix(text)
-                break;
-            case 'g':
-                display_value.text = app.sci(text)
-                break;
-            }
-        }
+        height: button_height
+        onClicked: {press_a_digit(text)}
         anchors {
             left: key_4.right
             top: key_4.top
@@ -531,20 +524,8 @@ Page {
         text: "6"
         font.pixelSize: 26
         width: kpbutton_width
-        height: kpbutton_height
-        onClicked: {
-            switch (display_fgh.text) {
-            case '':
-                display_value.text = app.type_a_digit(text)
-                break;
-            case 'f':
-                display_value.text = app.fix(text)
-                break;
-            case 'g':
-                display_value.text = app.sci(text)
-                break;
-            }
-        }
+        height: button_height
+        onClicked: {press_a_digit(text)}
         anchors {
             left: key_5.right
             top: key_4.top
@@ -555,9 +536,11 @@ Page {
         text: "×"
         font.pixelSize: 26
         width: kpbutton_width
-        height: kpbutton_height
+        height: button_height
         onClicked: {
             display_value.text = app.multiply()
+            display_fgh.text = app.shift_status('')
+            shift_keys()
         }
         anchors {
             left: key_6.right
@@ -569,20 +552,8 @@ Page {
         text: "1"
         font.pixelSize: 26
         width: kpbutton_width
-        height: kpbutton_height
-        onClicked: {
-            switch (display_fgh.text) {
-            case '':
-                display_value.text = app.type_a_digit(text)
-                break;
-            case 'f':
-                display_value.text = app.fix(text)
-                break;
-            case 'g':
-                display_value.text = app.sci(text)
-                break;
-            }
-        }
+        height: button_height
+        onClicked: {press_a_digit(text)}
         anchors {
             left: key_4.left
             top: key_4.bottom
@@ -593,20 +564,8 @@ Page {
         text: "2"
         font.pixelSize: 26
         width: kpbutton_width
-        height: kpbutton_height
-        onClicked: {
-            switch (display_fgh.text) {
-            case '':
-                display_value.text = app.type_a_digit(text)
-                break;
-            case 'f':
-                display_value.text = app.fix(text)
-                break;
-            case 'g':
-                display_value.text = app.sci(text)
-                break;
-            }
-        }
+        height: button_height
+        onClicked: {press_a_digit(text)}
         anchors {
             left: key_1.right
             top: key_1.top
@@ -617,20 +576,8 @@ Page {
         text: "3"
         font.pixelSize: 26
         width: kpbutton_width
-        height: kpbutton_height
-        onClicked: {
-            switch (display_fgh.text) {
-            case '':
-                display_value.text = app.type_a_digit(text)
-                break;
-            case 'f':
-                display_value.text = app.fix(text)
-                break;
-            case 'g':
-                display_value.text = app.sci(text)
-                break;
-            }
-        }
+        height: button_height
+        onClicked: {press_a_digit(text)}
         anchors {
             left: key_2.right
             top: key_1.top
@@ -641,9 +588,11 @@ Page {
         text: "-"
         font.pixelSize: 26
         width: kpbutton_width
-        height: kpbutton_height
+        height: button_height
         onClicked: {
             display_value.text = app.subtract()
+            display_fgh.text = app.shift_status('')
+            shift_keys()
         }
         anchors {
             left: key_3.right
@@ -655,20 +604,8 @@ Page {
         text: "0"
         font.pixelSize: 26
         width: kpbutton_width
-        height: kpbutton_height
-        onClicked: {
-            switch (display_fgh.text) {
-            case '':
-                display_value.text = app.type_a_digit(text)
-                break;
-            case 'f':
-                display_value.text = app.fix(text)
-                break;
-            case 'g':
-                display_value.text = app.sci(text)
-                break;
-            }
-        }
+        height: button_height
+        onClicked: {press_a_digit(text)}
         anchors {
             left: key_1.left
             top: key_1.bottom
@@ -679,10 +616,8 @@ Page {
         text: "."
         font.pixelSize: 26
         width: kpbutton_width
-        height: kpbutton_height
-        onClicked: {
-            display_value.text = app.type_a_digit(text)
-        }
+        height: button_height
+        onClicked: {press_a_digit(text)}
         anchors {
             left: key_0.right
             top: key_0.top
@@ -693,9 +628,11 @@ Page {
         text: "CHS"
         font.pixelSize: 26
         width: kpbutton_width
-        height: kpbutton_height
+        height: button_height
         onClicked: {
             display_value.text = app.chs()
+            display_fgh.text = app.shift_status('')
+            shift_keys()
         }
         anchors {
             left: key_dot.right
@@ -707,9 +644,11 @@ Page {
         text: "+"
         font.pixelSize: 26
         width: kpbutton_width
-        height: kpbutton_height
+        height: button_height
         onClicked: {
             display_value.text = app.add()
+            display_fgh.text = app.shift_status('')
+            shift_keys()
         }
         anchors {
             left: key_chs.right
