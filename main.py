@@ -140,14 +140,17 @@ class RpnApp(QApplication):
         if self.errored:
             self.errored = False
             return str(self.stack[-1])
-        if self.istyping is not False:
-            self.istyping = self.istyping[:-1]
-            return self.istyping
-        else:
+        elif self.istyping is False:
             if not self.stack:
                 self.errored = True
                 return "drop: empty stack"
             self.stack.pop()
+            return str(self.stack[-1])
+        elif self.istyping:
+            self.istyping = self.istyping[:-1]
+            return self.istyping
+        else:
+            self.istyping = False
             return str(self.stack[-1])
 
     def clear(self):
