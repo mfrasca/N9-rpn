@@ -66,7 +66,9 @@ class RpnApp(QApplication):
         self.lastx = 0
         self.istyping = False
         self.errored = False
-            
+        self.shift = 0
+        self.grad = 0
+
     def get_x(self):
         if self.istyping is not False:
             x = float(self.istyping)
@@ -133,6 +135,20 @@ class RpnApp(QApplication):
             self.errored = True
             return "divide: Division by Zero"
         return str(self.stack[-1])
+
+    @Slot(result=str)
+    def shift_status(self):
+        self.shift = (self.shift + 1) % 3
+        return {0: '',
+                1: 'f',
+                2: 'g'}[self.shift]
+
+    @Slot(result=str)
+    def grad_status(self):
+        self.grad = (self.grad + 1) % 3
+        return {0: '',
+                1: 'RAD',
+                2: 'GRAD'}[self.grad]
 
     @Slot(result=str)
     def drop(self):

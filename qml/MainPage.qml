@@ -24,7 +24,7 @@ Page {
             displayOrientationChanged()
         }
     }
-
+    
     function displayOrientationChanged() {
         if (width < 600) { // portrait
             button_height = 117
@@ -60,6 +60,53 @@ Page {
     property int button_height: 120
     property int button_width: 120
 
+    function shift_keys() {
+        switch(display_fgh.text) {
+        case '':
+            key_7.text = "7"
+            key_8.text = "8"
+            key_9.text = "9"
+            key_4.text = "4"
+            key_5.text = "5"
+            key_6.text = "6"
+            key_1.text = "1"
+            key_2.text = "2"
+            key_3.text = "3"
+            key_0.text = "0"
+            key_dot.text = "."
+            key_chs.text = "±"
+            break;
+        case 'f':
+            key_7.text = "sin"
+            key_8.text = "cos"
+            key_9.text = "tan"
+            key_4.text = "→R"
+            key_5.text = "→RAD"
+            key_6.text = "→H.MS"
+            key_1.text = "sinh"
+            key_2.text = "cosh"
+            key_3.text = "tanh"
+            key_0.text = "LN"
+            key_dot.text = "LOG"
+            key_chs.text = "%"
+            break;
+        case 'g':
+            key_7.text = "asin"
+            key_8.text = "acos"
+            key_9.text = "atan"
+            key_4.text = "→P"
+            key_5.text = "→DEG"
+            key_6.text = "→H"
+            key_1.text = "asinh"
+            key_2.text = "acosh"
+            key_3.text = "atanh"
+            key_0.text = "e^x"
+            key_dot.text = "10^x"
+            key_chs.text = "Δ%"
+            break;
+        }
+    }
+    
     Row {
         id: display_box
         width: button_width * 4
@@ -77,15 +124,37 @@ Page {
                 verticalCenter: parent.verticalCenter
             }
         }
+        Text {
+            id: display_fgh
+            font.pixelSize: 18
+            anchors {
+                left: parent.left
+                leftMargin: 60
+                bottom: parent.bottom
+                bottomMargin: 8
+            }
+        }
+        Text {
+            id: display_grad
+            font.pixelSize: 18
+            anchors {
+                right: parent.right
+                rightMargin: button_width * 2.5
+                bottom: parent.bottom
+                bottomMargin: 8
+            }
+        }
     }
 
     Button {
         id: key_second
-        text: "(f)"
+        text: "f/g"
         font.pixelSize: 32
         width: button_width
         height: button_height
         onClicked: {
+            display_fgh.text = app.shift_status()
+            shift_keys()
         }
         anchors {
             left: display_box.left
@@ -94,11 +163,12 @@ Page {
     }
     Button {
         id: key_antilog
-        text: "e^x"
+        text: "°DG"
         font.pixelSize: 32
         width: button_width
         height: button_height
         onClicked: {
+            display_grad.text = app.grad_status()
         }
         anchors {
             left: key_second.right
