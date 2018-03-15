@@ -21,8 +21,10 @@ Page {
         running: true;
         repeat: false;
         onTriggered: {
-            displayOrientationChanged()
+            display_value.text = app.get_display_value()
+            display_grad.text = app.get_grad_mode()
             shift_keys()
+            displayOrientationChanged()
         }
     }
     
@@ -83,8 +85,8 @@ Page {
             key_23.text = "sin"
             key_24.text = "cos"
             key_25.text = "tan"
-            key_31.text = ""
-            key_32.text = ""
+            key_31.text = "Σ+"
+            key_32.text = "avg"
             key_33.text = ""
             key_34.text = "1/x"
             key_35.text = "R↓"
@@ -100,8 +102,8 @@ Page {
             key_23.text = "asin"
             key_24.text = "acos"
             key_25.text = "atan"
-            key_31.text = ""
-            key_32.text = ""
+            key_31.text = "L.R."
+            key_32.text = "est"
             key_33.text = ""
             key_34.text = ""
             key_35.text = "R↑"
@@ -117,8 +119,8 @@ Page {
             key_23.text = "sinh"
             key_24.text = "cosh"
             key_25.text = "tanh"
-            key_31.text = ""
-            key_32.text = ""
+            key_31.text = "Σ-"
+            key_32.text = "s"
             key_33.text = ""
             key_34.text = ""
             key_35.text = "R↓"

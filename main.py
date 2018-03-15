@@ -15,8 +15,7 @@ from PySide.QtGui import QDesktopServices as QDS
 import math
 import platform
 import os
-import ConfigParser
-# import gconf
+import json
 
 
 from datetime import tzinfo, timedelta, datetime
@@ -43,6 +42,7 @@ class RpnApp(QApplication):
 
     def __init__(self, argv):
         super(RpnApp, self).__init__(argv)
+        logging.basicConfig()
         
         if(platform.machine().startswith('arm')):
             pass
@@ -55,22 +55,33 @@ class RpnApp(QApplication):
             pass
         
         try:
-            with open(os.path.join(self.root, "version"), 'r') as file:
+            versionfilename = os.path.join(self.root, "version")
+            with open(versionfilename, 'r') as file:
                 self.version = file.readline().strip()
                 self.build = file.readline().strip()
                 logger.info("Version: %s-%s" % (self.version, self.build))
-        except:
-            logger.error("Version file not found, please check your installation!")
+        except Exception, e:
+            logger.error("%s(%s) reading version file %s." % (type(e), e, versionfilename))
 
         self.config = Configuration()
-        self.stack = []
         self.lastx = 0
         self.istyping = False
         self.errored = False
         self.shift = ''
-        self.grad = 0
-        self.flat_angle = 180
-        self.format = "%0.4f"
+        self.stack = self.config.values['stack']
+        self.format = self.config.values['format']
+        self.grad = self.config.values['grad']
+        self.statistics = self.config.values['statistics']
+        self.flat_angle = {0: 180.0, 1: math.pi, 2: 200.0}[self.grad]
+
+    def finished(self):
+        self.config.values = {
+            'stack': self.stack,
+            'format': self.format,
+            'grad': self.grad,
+            'statistics': self.statistics, }
+        self.config.write()
+        logger.debug("Closed")
 
     def get_x(self):
         if self.istyping is not False:
@@ -95,6 +106,16 @@ class RpnApp(QApplication):
             s = s[:-3]
         return u' '.join(out) + '.' + d
             
+    @Slot(result=str)
+    def get_display_value(self):
+        return self.format_return()
+
+    @Slot(result=str)
+    def get_grad_mode(self):
+        return {0: '',
+                1: 'RAD',
+                2: 'GRAD'}[self.grad]
+    
     @Slot(result=str)
     def get_lastx(self):
         "Retrieve the last used x"
@@ -460,13 +481,6 @@ class RpnApp(QApplication):
         self.stack.append(math.atan(self.lastx) / math.pi * self.flat_angle)
         return self.format_return()
 
-    def finished(self):
-        logger.debug("Closed")
-
-    def does_opt_in(self):
-        logger.info("config.opt_in:", self.config.opt_in)
-        return self.config.opt_in
-
     @Slot(result=str)
     def get_version(self):
         return str(self.version) + "-" + str(self.build)
@@ -474,34 +488,25 @@ class RpnApp(QApplication):
 
 ####################################################################################################
 class Configuration():
-    configpath = ""
-    configfile = "config.conf"
-    opt_in = False
 
     def __init__(self):
-        self.configpath = os.path.join(QDS.storageLocation(QDS.DataLocation), "GPS-Logger")
-        self.configfile = self.configpath + "/" + self.configfile
+        self.configpath = os.path.join(QDS.storageLocation(QDS.DataLocation), "n9rpn")
+        self.configfile = os.path.join(self.configpath, "config.json")
 
         logger.debug("Loading configuration from: %s" % self.configfile)
-        self.ConfigParser = ConfigParser.SafeConfigParser()
         try:
-            self.ConfigParser.read(self.configfile)
-        except:  # use default config
-            logger.warn("Configuration file %s not existing or not compatible" % self.configfile)
-        try:
-            self.ConfigParser.add_section('main')
-        except:
-            pass
-
-        try:
-            self.opt_in = self.ConfigParser.getboolean("main", "opt_in")
+            with open(self.configfile, 'r') as handle:
+                self.values = json.load(handle)
             logger.debug("Configuration loaded")
         except:
-            logger.error("Error loading configuration, using default value")
+            logger.error("Failed to load configuration file!")
+            self.values = {'stack': [],
+                           'format': "%0.4f",
+                           'grad': 0,
+                           'statistics': [0, 0, 0, 0, 0, 0, ]}
 
     def write(self):
         logger.debug("Write configuration to: %s" % self.configfile)
-        self.ConfigParser.set('main', 'opt_in', str(self.opt_in))
 
         try:
             os.makedirs(self.configpath)
@@ -510,10 +515,10 @@ class Configuration():
 
         try:
             with open(self.configfile, 'w') as handle:
-                self.ConfigParser.write(handle)
+                json.dump(self.values, handle)
             logger.debug("Configuration saved")
-        except:
-            logger.error("Failed to write configuration file!")
+        except Exception, e:
+            logger.error("%s(%s) writing configuration file!" % (type(e), e))
 
 
 
@@ -530,9 +535,6 @@ if __name__ == '__main__':
     if(platform.machine().startswith('arm')):
         view.showFullScreen()
         view.show()
-        if(gpslogger.does_opt_in() is False):
-            root = view.rootObject()
-            root.show_Opt_In()
 
     gpslogger.exec_()  # endless loop
     gpslogger.finished()
