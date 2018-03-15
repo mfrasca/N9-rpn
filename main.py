@@ -216,6 +216,14 @@ class RpnApp(QApplication):
             self.istyping = False
             return self.format_return()
 
+    @Slot(result=str)
+    def get_stack_depth(self):
+        return "%d" % len(self.stack)
+
+    @Slot(result=str)
+    def get_stats_count(self):
+        return "%d" % self.statistics[0]
+        
     @Slot(str, result=str)
     def execute(self, name):
         if name not in ['Enter', u"⬅"]:
@@ -239,6 +247,7 @@ class RpnApp(QApplication):
                 'Py,x': 'permutations',
                 u"Σ+": 'stat_sigma_plus',
                 u"Σ-": 'stat_sigma_minus',
+                u"clΣ": 'stat_clear',
                 u"s": 'stat_standard_dev',
                 u"L.R.": 'stat_linear_regression',
                 u"est": 'stat_predicted_value',
@@ -249,6 +258,14 @@ class RpnApp(QApplication):
         except Exception:
             self.errored = True
             return 'some error'
+
+    def ln(self):
+        if len(self.stack) < 1:
+            self.errored = True
+            return "too few operators"
+        self.lastx = self.stack.pop()
+        self.stack.append(math.log(self.lastx))
+        return self.format_return()
 
     def factorial(self):
         if len(self.stack) < 1:
@@ -406,6 +423,10 @@ class RpnApp(QApplication):
     def clear(self):
         "Clear stack and statistical registers"
         self.stack = []
+        return ""
+
+    def stat_clear(self):
+        "Clear stack and statistical registers"
         self.statistics = [0, 0, 0, 0, 0, 0, ]
         return ""
 

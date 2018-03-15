@@ -123,12 +123,14 @@ Page {
             key_32.text = "s"
             key_33.text = "Cy,x"
             key_34.text = ""
-            key_35.text = "R↓"
+            key_35.text = "clΣ"
             key_enter.text = "lastx"
             key_43.text = "over"
             key_44.text = "clear"
             break;
         }
+        stack_depth.text = app.get_stack_depth()
+        stats_count.text = app.get_stats_count()
     }
     
     Row {
@@ -164,6 +166,26 @@ Page {
             anchors {
                 right: parent.right
                 rightMargin: button_width * 2.5
+                bottom: parent.bottom
+                bottomMargin: 8
+            }
+        }
+        Text {
+            id: stats_count
+            font.pixelSize: 18
+            anchors {
+                right: parent.right
+                rightMargin: button_width * 0.7
+                bottom: parent.bottom
+                bottomMargin: 8
+            }
+        }
+        Text {
+            id: stack_depth
+            font.pixelSize: 18
+            anchors {
+                right: parent.right
+                rightMargin: button_width * 1.25
                 bottom: parent.bottom
                 bottomMargin: 8
             }
