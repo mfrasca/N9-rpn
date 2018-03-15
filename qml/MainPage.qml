@@ -174,8 +174,8 @@ Page {
             id: stats_count
             font.pixelSize: 18
             anchors {
-                right: parent.right
-                rightMargin: button_width * 0.7
+                left: parent.left
+                leftMargin: button_width * 4.25
                 bottom: parent.bottom
                 bottomMargin: 8
             }
