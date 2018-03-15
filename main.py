@@ -83,12 +83,22 @@ class RpnApp(QApplication):
         if self.istyping is not False:
             self.stack.append(float(self.istyping))
             self.istyping = False
-    
+
+    def format_return(self):
+        if not self.stack:
+            return ''
+        s, d = (self.format % self.stack[-1]).split('.')
+        out = []
+        while len(s):
+            out.insert(0, s[-3:])
+            s = s[:-3]
+        return u' '.join(out) + '.' + d
+            
     @Slot(result=str)
     def get_lastx(self):
         "Retrieve the last used x"
         self.stack.append(self.lastx)
-        return self.format % self.stack[-1]
+        return self.format_return()
     
     @Slot(result=str)
     def add(self):
@@ -99,7 +109,7 @@ class RpnApp(QApplication):
             return "too few operators"
         self.lastx = self.get_x()
         self.stack.append(self.stack.pop() + self.lastx)
-        return self.format % self.stack[-1]
+        return self.format_return()
 
     @Slot(result=str)
     def subtract(self):
@@ -110,7 +120,7 @@ class RpnApp(QApplication):
             return "too few operators"
         self.lastx = self.get_x()
         self.stack.append(self.stack.pop() - self.lastx)
-        return self.format % self.stack[-1]
+        return self.format_return()
 
     @Slot(result=str)
     def multiply(self):
@@ -121,7 +131,7 @@ class RpnApp(QApplication):
             return "too few operators"
         self.lastx = self.get_x()
         self.stack.append(self.stack.pop() * self.lastx)
-        return self.format % self.stack[-1]
+        return self.format_return()
 
     @Slot(result=str)
     def divide(self):
@@ -136,11 +146,14 @@ class RpnApp(QApplication):
         except ZeroDivisionError:
             self.errored = True
             return "divide: Division by Zero"
-        return self.format % self.stack[-1]
+        return self.format_return()
 
     @Slot(str, result=str)
     def shift_status(self, toggle):
-        self.stop_typing()
+        if toggle == 'keep':
+            toggle = ''
+        else:
+            self.stop_typing()
         if self.shift == toggle:
             self.shift = ''
         else:
@@ -163,23 +176,24 @@ class RpnApp(QApplication):
         "Drop the last inserted item out of the stack"
         if self.errored:
             self.errored = False
-            return self.format % self.stack[-1]
+            return self.format_return()
         elif self.istyping is False:
             if not self.stack:
                 self.errored = True
                 return "drop: empty stack"
             self.stack.pop()
-            return self.format % self.stack[-1]
+            return self.format_return()
         elif self.istyping:
             self.istyping = self.istyping[:-1]
             return self.istyping
         else:
             self.istyping = False
-            return self.format % self.stack[-1]
+            return self.format_return()
 
     @Slot(str, result=str)
     def execute(self, name):
-        self.stop_typing()
+        if name not in ['Enter', u"←"]:
+            self.stop_typing()
         self.shift = ''
         name = {'%': 'take_percent',
                 '%T': 'percent_of_total',
@@ -187,10 +201,13 @@ class RpnApp(QApplication):
                 u'x²': 'square',
                 u'π': 'pi',
                 '1/x': 'inv',
-                'R^': 'stack_up', 
-                'RDN': 'stack_down', 
-                'e^x': 'exponential',
+                'Enter': 'dup',
+                u'←': 'drop',
+                u"x⇄y": 'swap',
                 'lastx': 'get_lastx',
+                u'R↑': 'stack_up', 
+                u'R↓': 'stack_down', 
+                'e^x': 'exponential',
                 'y^x': 'power', }.get(name, name)
         try:
             return getattr(self, name)()
@@ -200,7 +217,7 @@ class RpnApp(QApplication):
 
     def get_lastx(self):
         self.stack.append(self.lastx)
-        return self.format % self.stack[-1]
+        return self.format_return()
 
     def take_percent(self):
         if len(self.stack) < 2:
@@ -209,7 +226,7 @@ class RpnApp(QApplication):
         self.lastx = self.stack.pop()
         total = self.stack.pop()
         self.stack.append(total / 100.0 * self.lastx)
-        return self.format % self.stack[-1]
+        return self.format_return()
 
     def percent_of_total(self):
         if len(self.stack) < 2:
@@ -218,7 +235,7 @@ class RpnApp(QApplication):
         self.lastx = self.stack.pop()
         total = self.stack.pop()
         self.stack.append(100.0 * self.lastx / total)
-        return self.format % self.stack[-1]
+        return self.format_return()
 
     def percent_difference(self):
         if len(self.stack) < 2:
@@ -227,34 +244,34 @@ class RpnApp(QApplication):
         self.lastx = self.stack.pop()
         total = self.stack.pop()
         self.stack.append(100.0 * (self.lastx - total) / total)
-        return self.format % self.stack[-1]
+        return self.format_return()
     
     def stack_up(self):
         x = self.stack.pop(0)
         self.stack.append(x)
-        return self.format % self.stack[-1]
+        return self.format_return()
 
     def stack_down(self):
         x = self.stack.pop()
         self.stack.insert(0, x)
-        return self.format % self.stack[-1]
+        return self.format_return()
         
     def clear(self):
         "Clear the stack"
         self.stack = []
-        return self.format % self.stack[-1]
+        return ""
 
     def e(self):
         "Put 'e' constant in the stack"
         self.stop_typing()
         self.stack.append(math.e)
-        return self.format % self.stack[-1]
+        return self.format_return()
 
     def pi(self):
         "Put 'pi' constant in the stack"
         self.stop_typing()
         self.stack.append(math.pi)
-        return self.format % self.stack[-1]
+        return self.format_return()
 
     @Slot(result=str)
     def sqrt(self):
@@ -270,7 +287,7 @@ class RpnApp(QApplication):
             self.errored = True
             self.stack.append(self.lastx)
             return "sqrt: Invalid value %s" % e
-        return self.format % self.stack[-1]
+        return self.format_return()
 
     @Slot(result=str)
     def inv(self):
@@ -285,7 +302,7 @@ class RpnApp(QApplication):
             self.errored = True
             self.stack.append(self.lastx)
             return "1/x: Invalid value %s" % e
-        return self.format % self.stack[-1]
+        return self.format_return()
 
     @Slot(result=str)
     def square(self):
@@ -296,7 +313,7 @@ class RpnApp(QApplication):
             return "too few operators"
         self.lastx = self.get_x()
         self.stack.append(self.lastx * self.lastx)
-        return self.format % self.stack[-1]
+        return self.format_return()
 
     @Slot(result=str)
     def power(self):
@@ -307,7 +324,7 @@ class RpnApp(QApplication):
             return "too few operators"
         self.lastx = self.get_x()
         self.stack.append(math.pow(self.stack.pop(), self.lastx))
-        return self.format % self.stack[-1]
+        return self.format_return()
 
     @Slot(result=str)
     def exponential(self):
@@ -318,7 +335,7 @@ class RpnApp(QApplication):
             return "too few operators"
         self.lastx = self.get_x()
         self.stack.append(math.pow(math.e, self.lastx))
-        return self.format % self.stack[-1]
+        return self.format_return()
 
     @Slot(result=str)
     def swap(self):
@@ -331,7 +348,16 @@ class RpnApp(QApplication):
         y = self.stack.pop()
         self.stack.append(x)
         self.stack.append(y)
-        return self.format % y
+        return self.format_return()
+
+    @Slot(result=str)
+    def over(self):
+        self.stop_typing()
+        if len(self.stack) < 2:
+            self.errored = True
+            return "too few operators"
+        self.stack.append(self.stack[-2])
+        return self.format_return()
 
     @Slot(result=str)
     def chs(self):
@@ -348,7 +374,7 @@ class RpnApp(QApplication):
                 return "too few operators"
             x = -self.stack.pop()
             self.stack.append(x)
-            return self.format % self.stack[-1]
+            return self.format_return()
 
     @Slot(result=str)
     def dup(self):
@@ -361,7 +387,7 @@ class RpnApp(QApplication):
         else:
             x = self.get_x()
         self.stack.append(x)
-        return self.format % self.stack[-1]
+        return self.format_return()
 
     @Slot(str, result=str)
     def type_a_digit(self, digit):
@@ -374,12 +400,12 @@ class RpnApp(QApplication):
     @Slot(str, result=str)
     def fix(self, digits):
         self.format = "%0." + digits + "f"
-        return self.format % self.stack[-1]
+        return self.format_return()
 
     @Slot(str, result=str)
     def sci(self, digits):
         self.format = "%0." + digits + "e"
-        return self.format % self.stack[-1]
+        return self.format_return()
 
     def finished(self):
         logger.debug("Closed")

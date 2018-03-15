@@ -79,7 +79,6 @@ Page {
             key_13.text = "x²"
             key_14.text = "y^x"
             key_15.text = "ln"
-            key_21.text = "lastx"
             key_22.text = "%"
             key_23.text = "sin"
             key_24.text = "cos"
@@ -88,13 +87,15 @@ Page {
             key_32.text = ""
             key_33.text = ""
             key_34.text = "1/x"
-            key_35.text = "RDN"
+            key_35.text = "R↓"
+            key_enter.text = "Enter"
+            key_43.text = "x⇄y"
+            key_44.text = "←"
             break;
         case 'f':
             key_13.text = "sqrt"
             key_14.text = ""
             key_15.text = "e^x"
-            key_21.text = "lastx"
             key_22.text = "Δ%"
             key_23.text = "asin"
             key_24.text = "acos"
@@ -103,13 +104,15 @@ Page {
             key_32.text = ""
             key_33.text = ""
             key_34.text = ""
-            key_35.text = "R^"
+            key_35.text = "R↑"
+            key_enter.text = "Enter"
+            key_43.text = "x⇄y"
+            key_44.text = "←"
             break;
         case 'g':
             key_13.text = "y^x"
             key_14.text = ""
             key_15.text = "π"
-            key_21.text = "lastx"
             key_22.text = "%T"
             key_23.text = "sinh"
             key_24.text = "cosh"
@@ -118,7 +121,10 @@ Page {
             key_32.text = ""
             key_33.text = ""
             key_34.text = ""
-            key_35.text = "RDN"
+            key_35.text = "R↓"
+            key_enter.text = "lastx"
+            key_43.text = "over"
+            key_44.text = "clear"
             break;
         }
     }
@@ -243,13 +249,12 @@ Page {
     }
     Button {
         id: key_21
+        text: "mode"
         font.pixelSize: 26
         width: button_width
         height: button_height
         onClicked: {
-            display_value.text = app.execute(text)
-            display_fgh.text = app.shift_status('')
-            shift_keys()
+            display_grad.text = app.grad_mode()
         }
         anchors {
             left: key_11.left
@@ -320,11 +325,13 @@ Page {
     }
     Button {
         id: key_31
-        text: "c"
         font.pixelSize: 26
         width: button_width
         height: button_height
         onClicked: {
+            display_value.text = app.execute(text)
+            display_fgh.text = app.shift_status('')
+            shift_keys()
         }
         anchors {
             left: key_21.left
@@ -333,12 +340,13 @@ Page {
     }
     Button {
         id: key_32
-        text: "°DG"
         font.pixelSize: 26
         width: button_width
         height: button_height
         onClicked: {
-            display_grad.text = app.execute(text)
+            display_value.text = app.execute(text)
+            display_fgh.text = app.shift_status('')
+            shift_keys()
         }
         anchors {
             left: key_31.right
@@ -347,7 +355,6 @@ Page {
     }
     Button {
         id: key_33
-        text: "x²"
         font.pixelSize: 26
         width: button_width
         height: button_height
@@ -363,7 +370,6 @@ Page {
     }
     Button {
         id: key_34
-        text: "x²"
         font.pixelSize: 26
         width: button_width
         height: button_height
@@ -379,7 +385,6 @@ Page {
     }
     Button {
         id: key_35
-        text: "lastx"
         font.pixelSize: 26
         font.bold: true;
         width: button_width
@@ -396,12 +401,11 @@ Page {
     }
     Button {
         id: key_enter
-        text: "Enter"
         font.pixelSize: 26
         width: kpbutton_width * 2
         height: button_height
         onClicked: {
-            display_value.text = app.dup()
+            display_value.text = app.execute(text)
             display_fgh.text = app.shift_status('')
             shift_keys()
         }
@@ -412,12 +416,11 @@ Page {
     }
     Button {
         id: key_43
-        text: "x⇄y"
         font.pixelSize: 26
         width: kpbutton_width
         height: button_height
         onClicked: {
-            display_value.text = app.swap()
+            display_value.text = app.execute(text)
             display_fgh.text = app.shift_status('')
             shift_keys()
         }
@@ -428,14 +431,13 @@ Page {
     }
     Button {
         id: key_44
-        text: "←"
         font.pixelSize: 26
         font.bold: true;
         width: kpbutton_width
         height: button_height
         onClicked: {
-            display_value.text = app.drop()
-            display_fgh.text = app.shift_status('')
+            display_value.text = app.execute(text)
+            display_fgh.text = app.shift_status('keep')
             shift_keys()
         }
         anchors {
@@ -625,13 +627,13 @@ Page {
     }
     Button {
         id: key_chs
-        text: "CHS"
+        text: "+/-"
         font.pixelSize: 26
         width: kpbutton_width
         height: button_height
         onClicked: {
             display_value.text = app.chs()
-            display_fgh.text = app.shift_status('')
+            display_fgh.text = app.shift_status('keep')
             shift_keys()
         }
         anchors {
