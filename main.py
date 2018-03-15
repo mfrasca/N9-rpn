@@ -218,7 +218,7 @@ class RpnApp(QApplication):
 
     @Slot(str, result=str)
     def execute(self, name):
-        if name not in ['Enter', u"←"]:
+        if name not in ['Enter', u"⬅"]:
             self.stop_typing()
         self.shift = ''
         name = {'%': 'take_percent',
@@ -228,18 +228,139 @@ class RpnApp(QApplication):
                 u'π': 'pi',
                 '1/x': 'inv',
                 'Enter': 'dup',
-                u'←': 'drop',
+                u'⬅': 'drop',
                 u"x⇄y": 'swap',
                 'lastx': 'get_lastx',
                 u'R↑': 'stack_up', 
                 u'R↓': 'stack_down', 
                 'e^x': 'exponential',
+                'x!': 'factorial',
+                'Cy,x': 'combinations',
+                'Py,x': 'permutations',
+                u"Σ+": 'stat_sigma_plus',
+                u"Σ-": 'stat_sigma_minus',
+                u"s": 'stat_standard_dev',
+                u"L.R.": 'stat_linear_regression',
+                u"est": 'stat_predicted_value',
+                u"avg": 'stat_average',
                 'y^x': 'power', }.get(name, name)
         try:
             return getattr(self, name)()
         except Exception:
             self.errored = True
             return 'some error'
+
+    def factorial(self):
+        if len(self.stack) < 1:
+            self.errored = True
+            return "too few operators"
+        self.lastx = self.stack.pop()
+        self.stack.append(math.factorial(self.lastx))
+        return self.format_return()
+
+    def combinations(self):
+        if len(self.stack) < 2:
+            self.errored = True
+            return "too few operators"
+        x = self.lastx = self.stack.pop()
+        y = self.stack.pop()
+        f = math.factorial
+        self.stack.append(f(y) / f(x) / f(y - x))
+        return self.format_return()
+
+    def permutations(self):
+        if len(self.stack) < 2:
+            self.errored = True
+            return "too few operators"
+        x = self.lastx = self.stack.pop()
+        y = self.stack.pop()
+        f = math.factorial
+        self.stack.append(f(y) / f(y - x))
+        return self.format_return()
+
+    def stat_standard_dev(self):
+        "as Standard Deviation, by HP11c"
+        count, Sx, Sx2, Sy, Sy2, Sxy = self.statistics
+        if count <= 1:
+            self.errored = True
+            return "not enough data"
+        sigma_x = math.sqrt((count * Sx2 - Sx * Sx) / count / (count - 1))
+        sigma_y = math.sqrt((count * Sy2 - Sy * Sy) / count / (count - 1))
+        self.stack.append(sigma_y)
+        self.stack.append(sigma_x)
+        return self.format_return()
+
+    def stat_linear_regression(self):
+        count, Sx, Sx2, Sy, Sy2, Sxy = self.statistics
+        if count <= 1:
+            self.errored = True
+            return "not enough data"
+
+        slope = ((count * Sxy - Sx * Sy) /
+                 (count * Sx2 - Sx * Sx))
+        intercept = ((Sy * Sx2 - Sx * Sxy) /
+                     (count * Sx2 - Sx * Sx))
+        self.stack.append(slope)
+        self.stack.append(intercept)
+        return self.format_return()
+
+    def stat_predicted_value(self):
+        count, Sx, Sx2, Sy, Sy2, Sxy = self.statistics
+        if count <= 1 or len(self.stack) == 0:
+            self.errored = True
+            return "not enough data"
+
+        slope = ((count * Sxy - Sx * Sy) /
+                 (count * Sx2 - Sx * Sx))
+        intercept = ((Sy * Sx2 - Sx * Sxy) /
+                     (count * Sx2 - Sx * Sx))
+        Mx, My = Sx / count, Sy / count
+        r = (Sxy / count - Mx * My) / (math.sqrt((Sx2/count - Mx*Mx) * (Sy2/count - My*My)))
+        self.lastx = self.get_x()
+        self.stack.append(r)
+        self.stack.append(intercept + slope * self.lastx)
+        return self.format_return()
+
+    def stat_average(self):
+        count, Sx, Sx2, Sy, Sy2, Sxy = self.statistics
+        if count == 0:
+            self.errored = True
+            return "not enough data"
+        avg_x = Sx / count
+        avg_y = Sy / count
+        self.stack.append(avg_y)
+        self.stack.append(avg_x)
+        return self.format_return()
+
+    def stat_sigma_plus(self):
+        if len(self.stack) < 2:
+            self.errored = True
+            return "too few operators"
+        x = self.stack.pop()
+        y = self.stack.pop()
+        self.statistics[0] += 1
+        self.statistics[1] += x
+        self.statistics[2] += x * x
+        self.statistics[3] += y
+        self.statistics[4] += y * y
+        self.statistics[5] += x * y
+        self.errored = True
+        return "(%d)" % self.statistics[0]
+
+    def stat_sigma_minus(self):
+        if len(self.stack) < 2:
+            self.errored = True
+            return "too few operators"
+        x = self.stack.pop()
+        y = self.stack.pop()
+        self.statistics[0] -= 1
+        self.statistics[1] -= x
+        self.statistics[2] -= x * x
+        self.statistics[3] -= y
+        self.statistics[4] -= y * y
+        self.statistics[5] -= x * y
+        self.errored = True
+        return "(%d)" % self.statistics[0]
 
     def get_lastx(self):
         self.stack.append(self.lastx)
@@ -283,8 +404,9 @@ class RpnApp(QApplication):
         return self.format_return()
         
     def clear(self):
-        "Clear the stack"
+        "Clear stack and statistical registers"
         self.stack = []
+        self.statistics = [0, 0, 0, 0, 0, 0, ]
         return ""
 
     def e(self):
