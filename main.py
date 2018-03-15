@@ -69,6 +69,7 @@ class RpnApp(QApplication):
         self.errored = False
         self.shift = ''
         self.grad = 0
+        self.flat_angle = 180
         self.format = "%0.4f"
 
     def get_x(self):
@@ -167,6 +168,10 @@ class RpnApp(QApplication):
     @Slot(result=str)
     def grad_mode(self):
         self.grad = (self.grad + 1) % 3
+        self.flat_angle = {
+            0: 180.0,
+            1: math.pi,
+            2: 200.0}[self.grad]
         return {0: '',
                 1: 'RAD',
                 2: 'GRAD'}[self.grad]
@@ -405,6 +410,54 @@ class RpnApp(QApplication):
     @Slot(str, result=str)
     def sci(self, digits):
         self.format = "%0." + digits + "e"
+        return self.format_return()
+
+    def sin(self):
+        if len(self.stack) < 1:
+            self.errored = True
+            return "too few operators"
+        self.lastx = self.stack.pop()
+        self.stack.append(math.sin(self.lastx / self.flat_angle * math.pi))
+        return self.format_return()
+
+    def cos(self):
+        if len(self.stack) < 1:
+            self.errored = True
+            return "too few operators"
+        self.lastx = self.stack.pop()
+        self.stack.append(math.cos(self.lastx / self.flat_angle * math.pi))
+        return self.format_return()
+
+    def tan(self):
+        if len(self.stack) < 1:
+            self.errored = True
+            return "too few operators"
+        self.lastx = self.stack.pop()
+        self.stack.append(math.tan(self.lastx / self.flat_angle * math.pi))
+        return self.format_return()
+
+    def asin(self):
+        if len(self.stack) < 1:
+            self.errored = True
+            return "too few operators"
+        self.lastx = self.stack.pop()
+        self.stack.append(math.asin(self.lastx) / math.pi * self.flat_angle)
+        return self.format_return()
+
+    def acos(self):
+        if len(self.stack) < 1:
+            self.errored = True
+            return "too few operators"
+        self.lastx = self.stack.pop()
+        self.stack.append(math.acos(self.lastx) / math.pi * self.flat_angle)
+        return self.format_return()
+
+    def atan(self):
+        if len(self.stack) < 1:
+            self.errored = True
+            return "too few operators"
+        self.lastx = self.stack.pop()
+        self.stack.append(math.atan(self.lastx) / math.pi * self.flat_angle)
         return self.format_return()
 
     def finished(self):
