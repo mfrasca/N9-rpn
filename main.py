@@ -229,7 +229,7 @@ class RpnApp(QApplication):
             self.errored = True
             return "too few operators"
         self.lastx = self.stack.pop()
-        total = self.stack.pop()
+        total = self.stack[-1]
         self.stack.append(total / 100.0 * self.lastx)
         return self.format_return()
 
@@ -238,7 +238,7 @@ class RpnApp(QApplication):
             self.errored = True
             return "too few operators"
         self.lastx = self.stack.pop()
-        total = self.stack.pop()
+        total = self.stack[-1]
         self.stack.append(100.0 * self.lastx / total)
         return self.format_return()
 
@@ -247,7 +247,7 @@ class RpnApp(QApplication):
             self.errored = True
             return "too few operators"
         self.lastx = self.stack.pop()
-        total = self.stack.pop()
+        total = self.stack[-1]
         self.stack.append(100.0 * (self.lastx - total) / total)
         return self.format_return()
     
