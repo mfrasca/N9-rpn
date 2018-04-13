@@ -7,10 +7,10 @@ import "." as MyComponents
 Page {
     id: mainPage
 
-    // The layout here is for portrait, there are settings we need to change
-    // for landscape.  We react on display orientation changes, that's the
-    // signal "onWidthChanged".  To make sure this is called at start up, we
-    // use a single shot timer, after 1ms.
+    // We here define the portrait layout.  `displayOrientationChanged`
+    // handles the switch to landscape or back to portrait.  We activate it
+    // `onWidthChanged` and we make sure it is also called at start up, with
+    // a single shot `Timer`, after 1ms.
 
     onWidthChanged: {
         displayOrientationChanged()
@@ -79,9 +79,10 @@ Page {
         switch(display_fgh.text) {
         case '':
             key_13.text = "x²"
-            key_14.text = "y^x"
+            key_14.text = "log"
             key_15.text = "ln"
             key_22.text = "%"
+            key_21.text = "mode"
             key_23.text = "sin"
             key_24.text = "cos"
             key_25.text = "tan"
@@ -96,8 +97,9 @@ Page {
             break;
         case 'f':
             key_13.text = "sqrt"
-            key_14.text = ""
+            key_14.text = "10^x"
             key_15.text = "e^x"
+            key_21.text = "mode"
             key_22.text = "Δ%"
             key_23.text = "asin"
             key_24.text = "acos"
@@ -112,17 +114,18 @@ Page {
             key_44.text = "⬅"
             break;
         case 'g':
-            key_13.text = ""
+            key_13.text = "y^x"
             key_14.text = ""
             key_15.text = "π"
+            key_21.text = "hyp"
             key_22.text = "%T"
-            key_23.text = "sinh"
-            key_24.text = "cosh"
-            key_25.text = "tanh"
+            key_23.text = ""
+            key_24.text = ""
+            key_25.text = ""
             key_31.text = "Σ-"
             key_32.text = "s"
             key_33.text = "Cy,x"
-            key_34.text = ""
+            key_34.text = "fib"
             key_35.text = "clΣ"
             key_enter.text = "lastx"
             key_43.text = "over"
@@ -131,6 +134,7 @@ Page {
         }
         stack_depth.text = app.get_stack_depth()
         stats_count.text = app.get_stats_count()
+        hyp_mode_status.text = app.get_hyp_mode()
     }
     
     Row {
@@ -176,6 +180,16 @@ Page {
             anchors {
                 left: parent.left
                 leftMargin: button_width * 4.25
+                bottom: parent.bottom
+                bottomMargin: 8
+            }
+        }
+        Text {
+            id: hyp_mode_status
+            font.pixelSize: 18
+            anchors {
+                left: parent.left
+                leftMargin: button_width * 1.25
                 bottom: parent.bottom
                 bottomMargin: 8
             }
@@ -278,7 +292,13 @@ Page {
         width: button_width
         height: button_height
         onClicked: {
-            display_grad.text = app.grad_mode()
+            if(text == "mode") {
+                display_grad.text = app.grad_mode()
+            } else {
+                app.toggle_hyp_mode()
+                display_fgh.text = app.shift_status('')
+                shift_keys()
+            }
         }
         anchors {
             left: key_11.left
