@@ -8,5 +8,7 @@ it's totally not-ready-for-production, but it works for me.
 packagers most welcome!!!
 
 .. image:: img/portrait.png
+   :scale: 25%
 
 .. image:: img/landscape.png
+   :scale: 25%
