@@ -51,7 +51,6 @@ Page {
             display_fgh.text = ''
         }
         switch (display_fgh.text) {
-            
         case '': {
             display_value.text = app.type_a_digit(text)
         } break;
@@ -67,8 +66,8 @@ Page {
             display_fgh.text = app.shift_status('')
             shift_keys()
         } break;
-            
         }
+        display_y.text = app.format_x()
     }
     
     property int button_height: 120
@@ -99,7 +98,7 @@ Page {
             key_13.text = "sqrt"
             key_14.text = "10^x"
             key_15.text = "e^x"
-            key_21.text = "mode"
+            key_21.text = "hyp"
             key_22.text = "Δ%"
             key_23.text = "asin"
             key_24.text = "acos"
@@ -107,7 +106,7 @@ Page {
             key_31.text = "L.R."
             key_32.text = "est"
             key_33.text = "Py,x"
-            key_34.text = ""
+            key_34.text = "fib"
             key_35.text = "R↑"
             key_enter.text = "Enter"
             key_43.text = "x⇄y"
@@ -117,7 +116,7 @@ Page {
             key_13.text = "y^x"
             key_14.text = ""
             key_15.text = "π"
-            key_21.text = "hyp"
+            key_21.text = "mode"
             key_22.text = "%T"
             key_23.text = ""
             key_24.text = ""
@@ -125,7 +124,7 @@ Page {
             key_31.text = "Σ-"
             key_32.text = "s"
             key_33.text = "Cy,x"
-            key_34.text = "fib"
+            key_34.text = ""
             key_35.text = "clΣ"
             key_enter.text = "lastx"
             key_43.text = "over"
@@ -135,6 +134,7 @@ Page {
         stack_depth.text = app.get_stack_depth()
         stats_count.text = app.get_stats_count()
         hyp_mode_status.text = app.get_hyp_mode()
+        display_y.text = app.format_y()
     }
     
     Row {
@@ -144,6 +144,16 @@ Page {
         anchors {
             left: parent.left
             top: parent.top
+        }
+        Text {
+            id: display_y
+            font.pixelSize: 24
+            anchors {
+                left: parent.left
+                leftMargin: 6
+                top: parent.top
+                topMargin: 12
+            }
         }
         Text {
             id: display_value

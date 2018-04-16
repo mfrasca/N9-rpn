@@ -97,10 +97,10 @@ class RpnApp(QApplication):
             self.stack.append(float(self.istyping))
             self.istyping = False
 
-    def format_return(self):
+    def format_return(self, index=-1):
         if not self.stack:
             return ''
-        s, d = (self.format % self.stack[-1]).split('.')
+        s, d = (self.format % self.stack[index]).split('.')
         out = []
         while len(s):
             out.insert(0, s[-3:])
@@ -582,8 +582,20 @@ class RpnApp(QApplication):
 
         ans = [0, 0]
         fast_fib(int(self.lastx), ans)
-        self.stack.append(ans[0])
+        self.stack.append(float(ans[0]))
         return self.format_return()
+
+    @Slot(result=str)
+    def format_x(self):
+        if len(self.stack) < 1:
+            return ''
+        return self.format_return(-1)
+
+    @Slot(result=str)
+    def format_y(self):
+        if len(self.stack) < 2:
+            return ''
+        return self.format_return(-2)
 
     @Slot(result=str)
     def over(self):
