@@ -67,7 +67,7 @@ Page {
             shift_keys()
         } break;
         }
-        display_y.text = app.format_x()
+        display_y.text = app.format_y()
     }
     
     property int button_height: 120
@@ -135,6 +135,7 @@ Page {
         stats_count.text = app.get_stats_count()
         hyp_mode_status.text = app.get_hyp_mode()
         display_y.text = app.format_y()
+        display_value.text = app.format_x()
     }
     
     Row {
@@ -491,8 +492,10 @@ Page {
         height: button_height
         onClicked: {
             display_value.text = app.execute(text)
+            display_y.text = app.format_y()
             display_fgh.text = app.shift_status('keep')
-            shift_keys()
+            stack_depth.text = app.get_stack_depth()
+            stats_count.text = app.get_stats_count()
         }
         anchors {
             left: key_43.right
@@ -542,7 +545,7 @@ Page {
         width: kpbutton_width
         height: button_height
         onClicked: {
-            display_value.text = app.divide()
+            display_value.text = app.execute(text)
             display_fgh.text = app.shift_status('')
             shift_keys()
         }
@@ -594,7 +597,7 @@ Page {
         width: kpbutton_width
         height: button_height
         onClicked: {
-            display_value.text = app.multiply()
+            display_value.text = app.execute(text)
             display_fgh.text = app.shift_status('')
             shift_keys()
         }
@@ -646,7 +649,7 @@ Page {
         width: kpbutton_width
         height: button_height
         onClicked: {
-            display_value.text = app.subtract()
+            display_value.text = app.execute(text)
             display_fgh.text = app.shift_status('')
             shift_keys()
         }
@@ -702,7 +705,7 @@ Page {
         width: kpbutton_width
         height: button_height
         onClicked: {
-            display_value.text = app.add()
+            display_value.text = app.execute(text)
             display_fgh.text = app.shift_status('')
             shift_keys()
         }

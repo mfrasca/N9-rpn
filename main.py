@@ -33,6 +33,18 @@ def is_numeric(item):
     return False
 
 
+class TooFewOperators(Exception):
+    pass
+
+
+class EmptyStack(Exception):
+    pass
+
+
+class NotEnoughData(Exception):
+    pass
+
+
 class RpnApp(QApplication):
     "Reverse Polish Notation class"
 
@@ -128,8 +140,7 @@ class RpnApp(QApplication):
         "Add two digits"
         self.stop_typing()
         if len(self.stack) < 2:
-            self.errored = True
-            return "too few operators"
+            raise TooFewOperators()
         self.lastx = self.get_x()
         self.stack.append(self.stack.pop() + self.lastx)
         return self.format_return()
@@ -139,8 +150,7 @@ class RpnApp(QApplication):
         "Substract two digits"
         self.stop_typing()
         if len(self.stack) < 2:
-            self.errored = True
-            return "too few operators"
+            raise TooFewOperators()
         self.lastx = self.get_x()
         self.stack.append(self.stack.pop() - self.lastx)
         return self.format_return()
@@ -150,8 +160,7 @@ class RpnApp(QApplication):
         "Multiply two digits"
         self.stop_typing()
         if len(self.stack) < 2:
-            self.errored = True
-            return "too few operators"
+            raise TooFewOperators()
         self.lastx = self.get_x()
         self.stack.append(self.stack.pop() * self.lastx)
         return self.format_return()
@@ -170,14 +179,9 @@ class RpnApp(QApplication):
         "Divide two digits"
         self.stop_typing()
         if len(self.stack) < 2:
-            self.errored = True
-            return "too few operators"
+            raise TooFewOperators()
         self.lastx = self.get_x()
-        try:
-            self.stack.append(self.stack.pop() / self.lastx)
-        except ZeroDivisionError:
-            self.errored = True
-            return "divide: Division by Zero"
+        self.stack.append(self.stack.pop() / self.lastx)
         return self.format_return()
 
     @Slot(str, result=str)
@@ -209,14 +213,16 @@ class RpnApp(QApplication):
 
     @Slot(result=str)
     def drop(self):
-        "Drop the last inserted item out of the stack"
+        """if in error, clear the error status, if typing, remove one char,
+        otherwise drop the last inserted item out of the stack
+
+        """
         if self.errored:
             self.errored = False
             return self.format_return()
         elif self.istyping is False:
             if not self.stack:
-                self.errored = True
-                return "drop: empty stack"
+                raise EmptyStack()
             self.stack.pop()
             return self.format_return()
         elif self.istyping:
@@ -246,6 +252,10 @@ class RpnApp(QApplication):
                 u'π': 'pi',
                 '1/x': 'inv',
                 'Enter': 'dup',
+                u'÷': 'divide',
+                u'×': 'multiply',
+                u'+': 'add',
+                u'-': 'subtract',
                 u'⬅': 'drop',
                 u"x⇄y": 'swap',
                 'lastx': 'get_lastx',
@@ -265,42 +275,40 @@ class RpnApp(QApplication):
                 u"avg": 'stat_average',
                 'fib': 'fibonacci',
                 'y^x': 'power', }.get(name, name)
+        prev_stack = [i for i in self.stack]
         try:
             result = getattr(self, name)()
             self.hyp_mode = False
         except Exception, e:
+            self.stack = prev_stack
             self.errored = True
             result = e.__class__.__name__
         return result
 
     def ln(self):
         if len(self.stack) < 1:
-            self.errored = True
-            return "too few operators"
+            raise TooFewOperators()
         self.lastx = self.stack.pop()
         self.stack.append(math.log(self.lastx))
         return self.format_return()
 
     def log(self):
         if len(self.stack) < 1:
-            self.errored = True
-            return "too few operators"
+            raise TooFewOperators()
         self.lastx = self.stack.pop()
         self.stack.append(math.log10(self.lastx))
         return self.format_return()
 
     def factorial(self):
         if len(self.stack) < 1:
-            self.errored = True
-            return "too few operators"
+            raise TooFewOperators()
         self.lastx = self.stack.pop()
         self.stack.append(math.factorial(self.lastx))
         return self.format_return()
 
     def combinations(self):
         if len(self.stack) < 2:
-            self.errored = True
-            return "too few operators"
+            raise TooFewOperators()
         x = self.lastx = self.stack.pop()
         y = self.stack.pop()
         f = math.factorial
@@ -309,8 +317,7 @@ class RpnApp(QApplication):
 
     def permutations(self):
         if len(self.stack) < 2:
-            self.errored = True
-            return "too few operators"
+            raise TooFewOperators()
         x = self.lastx = self.stack.pop()
         y = self.stack.pop()
         f = math.factorial
@@ -321,8 +328,7 @@ class RpnApp(QApplication):
         "as Standard Deviation, by HP11c"
         count, Sx, Sx2, Sy, Sy2, Sxy = self.statistics
         if count <= 1:
-            self.errored = True
-            return "not enough data"
+            raise NotEnoughData()
         sigma_x = math.sqrt((count * Sx2 - Sx * Sx) / count / (count - 1))
         sigma_y = math.sqrt((count * Sy2 - Sy * Sy) / count / (count - 1))
         self.stack.append(sigma_y)
@@ -332,8 +338,7 @@ class RpnApp(QApplication):
     def stat_linear_regression(self):
         count, Sx, Sx2, Sy, Sy2, Sxy = self.statistics
         if count <= 1:
-            self.errored = True
-            return "not enough data"
+            raise NotEnoughData()
 
         slope = ((count * Sxy - Sx * Sy) /
                  (count * Sx2 - Sx * Sx))
@@ -346,8 +351,7 @@ class RpnApp(QApplication):
     def stat_predicted_value(self):
         count, Sx, Sx2, Sy, Sy2, Sxy = self.statistics
         if count <= 1 or len(self.stack) == 0:
-            self.errored = True
-            return "not enough data"
+            raise NotEnoughData()
 
         slope = ((count * Sxy - Sx * Sy) /
                  (count * Sx2 - Sx * Sx))
@@ -363,8 +367,7 @@ class RpnApp(QApplication):
     def stat_average(self):
         count, Sx, Sx2, Sy, Sy2, Sxy = self.statistics
         if count == 0:
-            self.errored = True
-            return "not enough data"
+            raise NotEnoughData()
         avg_x = Sx / count
         avg_y = Sy / count
         self.stack.append(avg_y)
@@ -373,8 +376,7 @@ class RpnApp(QApplication):
 
     def stat_sigma_plus(self):
         if len(self.stack) < 2:
-            self.errored = True
-            return "too few operators"
+            raise TooFewOperators()
         x = self.stack.pop()
         y = self.stack.pop()
         self.statistics[0] += 1
@@ -388,8 +390,7 @@ class RpnApp(QApplication):
 
     def stat_sigma_minus(self):
         if len(self.stack) < 2:
-            self.errored = True
-            return "too few operators"
+            raise TooFewOperators()
         x = self.stack.pop()
         y = self.stack.pop()
         self.statistics[0] -= 1
@@ -407,8 +408,7 @@ class RpnApp(QApplication):
 
     def take_percent(self):
         if len(self.stack) < 2:
-            self.errored = True
-            return "too few operators"
+            raise TooFewOperators()
         self.lastx = self.stack.pop()
         total = self.stack[-1]
         self.stack.append(total / 100.0 * self.lastx)
@@ -416,8 +416,7 @@ class RpnApp(QApplication):
 
     def percent_of_total(self):
         if len(self.stack) < 2:
-            self.errored = True
-            return "too few operators"
+            raise TooFewOperators()
         self.lastx = self.stack.pop()
         total = self.stack[-1]
         self.stack.append(100.0 * self.lastx / total)
@@ -425,8 +424,7 @@ class RpnApp(QApplication):
 
     def percent_difference(self):
         if len(self.stack) < 2:
-            self.errored = True
-            return "too few operators"
+            raise TooFewOperators()
         self.lastx = self.stack.pop()
         total = self.stack[-1]
         self.stack.append(100.0 * (self.lastx - total) / total)
@@ -469,30 +467,18 @@ class RpnApp(QApplication):
         "Extract the square root of the digit"
         self.stop_typing()
         if len(self.stack) < 1:
-            self.errored = True
-            return "too few operators"
+            raise TooFewOperators()
         self.lastx = self.get_x()
-        try:
-            self.stack.append(math.sqrt(self.lastx))
-        except ValueError as e:
-            self.errored = True
-            self.stack.append(self.lastx)
-            return "sqrt: Invalid value %s" % e
+        self.stack.append(math.sqrt(self.lastx))
         return self.format_return()
 
     @Slot(result=str)
     def inv(self):
         self.stop_typing()
         if len(self.stack) < 1:
-            self.errored = True
-            return "too few operators"
+            raise TooFewOperators()
         self.lastx = self.get_x()
-        try:
-            self.stack.append(1.0 / self.lastx)
-        except ValueError as e:
-            self.errored = True
-            self.stack.append(self.lastx)
-            return "1/x: Invalid value %s" % e
+        self.stack.append(1.0 / self.lastx)
         return self.format_return()
 
     @Slot(result=str)
@@ -500,8 +486,7 @@ class RpnApp(QApplication):
         "Extract the square root of the digit"
         self.stop_typing()
         if len(self.stack) < 1:
-            self.errored = True
-            return "too few operators"
+            raise TooFewOperators()
         self.lastx = self.get_x()
         self.stack.append(self.lastx * self.lastx)
         return self.format_return()
@@ -511,8 +496,7 @@ class RpnApp(QApplication):
         "Raise y to the power of x"
         self.stop_typing()
         if len(self.stack) < 2:
-            self.errored = True
-            return "too few operators"
+            raise TooFewOperators()
         self.lastx = self.get_x()
         self.stack.append(math.pow(self.stack.pop(), self.lastx))
         return self.format_return()
@@ -522,8 +506,7 @@ class RpnApp(QApplication):
         "Raise e to the power of x"
         self.stop_typing()
         if len(self.stack) < 1:
-            self.errored = True
-            return "too few operators"
+            raise TooFewOperators()
         self.lastx = self.get_x()
         self.stack.append(math.exp(self.lastx))
         return self.format_return()
@@ -533,8 +516,7 @@ class RpnApp(QApplication):
         "Raise e to the power of x"
         self.stop_typing()
         if len(self.stack) < 1:
-            self.errored = True
-            return "too few operators"
+            raise TooFewOperators()
         self.lastx = self.get_x()
         self.stack.append(math.pow(10.0, self.lastx))
         return self.format_return()
@@ -544,8 +526,7 @@ class RpnApp(QApplication):
         "Swap the last two items in the stack"
         self.stop_typing()
         if len(self.stack) < 2:
-            self.errored = True
-            return "too few operators"
+            raise TooFewOperators()
         x = self.get_x()
         y = self.stack.pop()
         self.stack.append(x)
@@ -555,12 +536,13 @@ class RpnApp(QApplication):
     def fibonacci(self):
         self.stop_typing()
         if len(self.stack) < 1:
-            self.errored = True
-            return "too few operators"
+            raise TooFewOperators()
         if int(self.stack[-1]) != self.stack[-1]:
             raise ValueError()
         if self.stack[-1] < 0:
             raise ValueError()
+        if self.stack[-1] > 2000:
+            raise OverflowError()
         self.lastx = self.get_x()
 
         def fast_fib(n, ans):
@@ -586,23 +568,19 @@ class RpnApp(QApplication):
         return self.format_return()
 
     @Slot(result=str)
-    def format_x(self):
-        if len(self.stack) < 1:
-            return ''
-        return self.format_return(-1)
-
-    @Slot(result=str)
     def format_y(self):
-        if len(self.stack) < 2:
+        depth = 2
+        if self.istyping is not False:
+            depth = 1
+        if len(self.stack) < depth:
             return ''
-        return self.format_return(-2)
+        return self.format_return(-depth)
 
     @Slot(result=str)
     def over(self):
         self.stop_typing()
         if len(self.stack) < 2:
-            self.errored = True
-            return "too few operators"
+            raise TooFewOperators()
         self.stack.append(self.stack[-2])
         return self.format_return()
 
@@ -617,8 +595,7 @@ class RpnApp(QApplication):
             return self.istyping
         else:
             if len(self.stack) < 1:
-                self.errored = True
-                return "too few operators"
+                raise TooFewOperators()
             x = -self.stack.pop()
             self.stack.append(x)
             return self.format_return()
@@ -628,8 +605,7 @@ class RpnApp(QApplication):
         "Duplicates the last item in the stack"
         if self.istyping is False:
             if len(self.stack) < 1:
-                self.errored = True
-                return "too few operators"
+                raise TooFewOperators()
             x = self.stack[-1]
         else:
             x = self.get_x()
@@ -656,8 +632,7 @@ class RpnApp(QApplication):
 
     def sin(self):
         if len(self.stack) < 1:
-            self.errored = True
-            return "too few operators"
+            raise TooFewOperators()
         self.lastx = self.stack.pop()
         f = {True: math.sinh, False: math.sin}[self.hyp_mode]
         self.stack.append(f(self.lastx / self.flat_angle * math.pi))
@@ -665,8 +640,7 @@ class RpnApp(QApplication):
 
     def cos(self):
         if len(self.stack) < 1:
-            self.errored = True
-            return "too few operators"
+            raise TooFewOperators()
         self.lastx = self.stack.pop()
         f = {True: math.cosh, False: math.cos}[self.hyp_mode]
         self.stack.append(f(self.lastx / self.flat_angle * math.pi))
@@ -674,8 +648,7 @@ class RpnApp(QApplication):
 
     def tan(self):
         if len(self.stack) < 1:
-            self.errored = True
-            return "too few operators"
+            raise TooFewOperators()
         self.lastx = self.stack.pop()
         f = {True: math.tanh, False: math.tan}[self.hyp_mode]
         self.stack.append(f(self.lastx / self.flat_angle * math.pi))
@@ -683,8 +656,7 @@ class RpnApp(QApplication):
 
     def asin(self):
         if len(self.stack) < 1:
-            self.errored = True
-            return "too few operators"
+            raise TooFewOperators()
         self.lastx = self.stack.pop()
         f = {True: math.asinh, False: math.asin}[self.hyp_mode]
         self.stack.append(f(self.lastx) / math.pi * self.flat_angle)
@@ -692,8 +664,7 @@ class RpnApp(QApplication):
 
     def acos(self):
         if len(self.stack) < 1:
-            self.errored = True
-            return "too few operators"
+            raise TooFewOperators()
         self.lastx = self.stack.pop()
         f = {True: math.acosh, False: math.acos}[self.hyp_mode]
         self.stack.append(f(self.lastx) / math.pi * self.flat_angle)
@@ -701,8 +672,7 @@ class RpnApp(QApplication):
 
     def atan(self):
         if len(self.stack) < 1:
-            self.errored = True
-            return "too few operators"
+            raise TooFewOperators()
         self.lastx = self.stack.pop()
         f = {True: math.atanh, False: math.atan}[self.hyp_mode]
         self.stack.append(f(self.lastx) / math.pi * self.flat_angle)
