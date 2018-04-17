@@ -113,6 +113,9 @@ class RpnApp(QApplication):
         if not self.stack:
             return ''
         s, d = (self.format % self.stack[index]).split('.')
+        if (s in ['-0', '0'] and d.replace('0', '') == '') or len(s + d) > 16:
+            format = self.format.replace('f', 'e')
+            s, d = (format % self.stack[index]).split('.')
         out = []
         while len(s):
             out.insert(0, s[-3:])
@@ -302,6 +305,8 @@ class RpnApp(QApplication):
     def factorial(self):
         if len(self.stack) < 1:
             raise TooFewOperators()
+        if self.stack[-1] > 171:
+            raise OverflowError()
         self.lastx = self.stack.pop()
         self.stack.append(math.factorial(self.lastx))
         return self.format_return()
