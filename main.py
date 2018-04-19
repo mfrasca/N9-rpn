@@ -112,15 +112,15 @@ class RpnApp(QApplication):
     def format_return(self, index=-1):
         if not self.stack:
             return ''
-        s, d = (self.format % self.stack[index]).split('.')
-        if (s in ['-0', '0'] and d.replace('0', '') == '') or len(s + d) > 16:
+        s, d = (self.format % self.stack[index] + '.').split('.')[:2]
+        if self.stack[index] != 0.0 and (s in ['-0', '0'] and d.replace('0', '') == '') or len(s + d) > 16:
             format = self.format.replace('f', 'e')
-            s, d = (format % self.stack[index]).split('.')
+            s, d = (format % self.stack[index] + '.').split('.')[:2]
         out = []
         while len(s):
             out.insert(0, s[-3:])
             s = s[:-3]
-        return u' '.join(out) + '.' + d
+        return (u' '.join(out) + '.' + d).strip('.')
             
     @Slot(result=str)
     def get_display_value(self):
