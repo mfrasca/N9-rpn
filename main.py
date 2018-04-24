@@ -434,6 +434,19 @@ class RpnApp(QApplication):
         total = self.stack[-1]
         self.stack.append(100.0 * (self.lastx - total) / total)
         return self.format_return()
+        
+    def solve(self):
+        "second degree equation, enter c, b, a and solve"
+        if len(self.stack) < 3:
+            raise TooFewOperators()
+        a = self.lastx = self.stack.pop()
+        b = self.stack.pop()
+        c = self.stack.pop()
+        beta = -b / 2 / a
+        delta = beta * beta - c / a
+        self.stack.append(beta - math.sqrt(delta))
+        self.stack.append(beta + math.sqrt(delta))
+        return self.format_return()
     
     def stack_up(self):
         x = self.stack.pop(0)
