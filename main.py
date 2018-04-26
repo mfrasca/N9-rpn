@@ -147,6 +147,7 @@ class RpnApp(QApplication):
         self.lastx = self.get_x()
         if self.operation_over:
             self.stack.append(self.stack[-1] + self.lastx)
+            self.shift = 'f'
         else:
             self.stack.append(self.stack.pop() + self.lastx)
         return self.format_return()
@@ -160,6 +161,7 @@ class RpnApp(QApplication):
         self.lastx = self.get_x()
         if self.operation_over:
             self.stack.append(self.lastx - self.stack[-1])
+            self.shift = 'f'
         else:
             self.stack.append(self.stack.pop() - self.lastx)
         return self.format_return()
@@ -173,6 +175,7 @@ class RpnApp(QApplication):
         self.lastx = self.get_x()
         if self.operation_over:
             self.stack.append(self.lastx * self.stack[-1])
+            self.shift = 'f'
         else:
             self.stack.append(self.stack.pop() * self.lastx)
         return self.format_return()
@@ -186,6 +189,7 @@ class RpnApp(QApplication):
         self.lastx = self.get_x()
         if self.operation_over:
             self.stack.append(self.lastx / self.stack[-1])
+            self.shift = 'f'
         else:
             self.stack.append(self.stack.pop() / self.lastx)
         return self.format_return()

@@ -226,6 +226,7 @@ Page {
         height: button_height
         onClicked: {
             display_fgh.text = app.shift_status('f')
+            display_fgh.anchors.leftMargin = 60
             shift_keys()
         }
         anchors {
@@ -241,6 +242,7 @@ Page {
         height: button_height
         onClicked: {
             display_fgh.text = app.shift_status('g')
+            display_fgh.anchors.leftMargin = 75
             shift_keys()
         }
         anchors {
@@ -545,7 +547,6 @@ Page {
         height: button_height
         onClicked: {
             display_value.text = app.execute(text)
-            display_fgh.text = app.shift_status('')
             shift_keys()
         }
         anchors {
@@ -597,7 +598,6 @@ Page {
         height: button_height
         onClicked: {
             display_value.text = app.execute(text)
-            display_fgh.text = app.shift_status('')
             shift_keys()
         }
         anchors {
@@ -649,7 +649,6 @@ Page {
         height: button_height
         onClicked: {
             display_value.text = app.execute(text)
-            display_fgh.text = app.shift_status('')
             shift_keys()
         }
         anchors {
@@ -705,7 +704,6 @@ Page {
         height: button_height
         onClicked: {
             display_value.text = app.execute(text)
-            display_fgh.text = app.shift_status('')
             shift_keys()
         }
         anchors {
