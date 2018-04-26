@@ -145,7 +145,10 @@ class RpnApp(QApplication):
         if len(self.stack) < 2:
             raise TooFewOperators()
         self.lastx = self.get_x()
-        self.stack.append(self.stack.pop() + self.lastx)
+        if self.operation_over:
+            self.stack.append(self.stack[-1] + self.lastx)
+        else:
+            self.stack.append(self.stack.pop() + self.lastx)
         return self.format_return()
 
     @Slot(result=str)
@@ -155,7 +158,10 @@ class RpnApp(QApplication):
         if len(self.stack) < 2:
             raise TooFewOperators()
         self.lastx = self.get_x()
-        self.stack.append(self.stack.pop() - self.lastx)
+        if self.operation_over:
+            self.stack.append(self.lastx - self.stack[-1])
+        else:
+            self.stack.append(self.stack.pop() - self.lastx)
         return self.format_return()
 
     @Slot(result=str)
@@ -165,7 +171,23 @@ class RpnApp(QApplication):
         if len(self.stack) < 2:
             raise TooFewOperators()
         self.lastx = self.get_x()
-        self.stack.append(self.stack.pop() * self.lastx)
+        if self.operation_over:
+            self.stack.append(self.lastx * self.stack[-1])
+        else:
+            self.stack.append(self.stack.pop() * self.lastx)
+        return self.format_return()
+    
+    @Slot(result=str)
+    def divide(self):
+        "Divide two digits"
+        self.stop_typing()
+        if len(self.stack) < 2:
+            raise TooFewOperators()
+        self.lastx = self.get_x()
+        if self.operation_over:
+            self.stack.append(self.lastx / self.stack[-1])
+        else:
+            self.stack.append(self.stack.pop() / self.lastx)
         return self.format_return()
 
     @Slot(result=str)
@@ -176,16 +198,6 @@ class RpnApp(QApplication):
     @Slot(result=str)
     def get_hyp_mode(self):
         return {True: 'hyp', False: ''}[self.hyp_mode]
-    
-    @Slot(result=str)
-    def divide(self):
-        "Divide two digits"
-        self.stop_typing()
-        if len(self.stack) < 2:
-            raise TooFewOperators()
-        self.lastx = self.get_x()
-        self.stack.append(self.stack.pop() / self.lastx)
-        return self.format_return()
 
     @Slot(str, result=str)
     def shift_status(self, toggle):
@@ -247,6 +259,7 @@ class RpnApp(QApplication):
     def execute(self, name):
         if name not in ['Enter', u"⬅"]:
             self.stop_typing()
+        self.operation_over = (self.shift != '')
         self.shift = ''
         name = {'%': 'take_percent',
                 '%T': 'percent_of_total',
