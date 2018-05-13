@@ -3,6 +3,6 @@ Version=1.0
 Name=N9 RPN
 Comment=Minimal RPN Calc
 Exec=/usr/bin/invoker --type=e --single-instance /opt/rpncalc/main.py
-Icon=/opt/rpncalc/img/icon80.png
+Icon=/opt/rpncalc/img/icon.png
 Terminal=false
 Type=Application
