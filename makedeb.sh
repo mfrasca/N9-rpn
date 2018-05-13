@@ -18,13 +18,13 @@ sed -i 's/VERSION/'$VERSION'/g' rpncalc-$VERSION/DEBIAN/control
 
 # copy current files to target dir
 cp -p n9-app.desktop rpncalc-$VERSION/usr/share/applications/
-cp -a main.py qml img rpncalc-$VERSION/opt/rpncalc/
+cp -a [a-z]* rpncalc-$VERSION/opt/rpncalc/
 
 # don't distribute emacs backup files
 find rpncalc-$VERSION -name "*~" -exec rm {} \;
 
 # HERE we make the deb file - files inside deb must be owned by root
-fakeroot bash -c 'chown -R root.root rpncalc-'$VERSION'/{opt,usr}; dpkg -b rpncalc-'$VERSION
+fakeroot bash -c 'chown -R root.root rpncalc-'$VERSION'/[a-z]*; dpkg -b rpncalc-'$VERSION
 
 # target dir is really a temporary dir, so remove it now
 rm -fr rpncalc-$VERSION 2>/dev/null
