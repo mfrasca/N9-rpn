@@ -1,9 +1,23 @@
 #!/bin/bash
 
-PACKAGE_NAME=rpncalc
+# good starting point contains exactly one .desktop file, and a src directory
+if [ $(ls -d *.desktop | wc -l) != 1 ]
+then
+    echo "the current work directory should contain exactly one *.desktop file."
+    exit 1
+fi
+if [ ! -f *.desktop ]
+then
+    echo "there is a *.desktop in the current directory, but it is not a file."
+    exit 1
+fi
+if [ ! -d src ]
+then
+    echo "there is no src directory in the current work directory"
+    exit 2
+fi
 
-# make sure we know in which directory we are
-cd $(dirname $0)
+PACKAGE_NAME=$(basename *.desktop .desktop)
 
 # grab version from desktop file
 VERSION=$(sed -ne 's/Version=[^0-9]*\([0-9\.]*\)/\1/p' $PACKAGE_NAME.desktop)
