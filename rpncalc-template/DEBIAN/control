@@ -1,0 +1,14 @@
+Package: rpncalc
+Version: VERSION
+Architecture: all
+Maintainer: Mario Frasca <mario@anche.no>
+Depends: python2.6
+Installed-Size: 167
+Homepage: http://github.com/mfrasca/n9-rpn/
+Description: a minimal rpn calculator for MeeGo.
+ I was missing this, so I wrote one myself, it's not the best thing I ever
+ wrote, but it is a very decent calculator, it has practically every
+ function I ever used on my HP11C, apart from being programmable, which it
+ isn't.  There's still some unused keys for more functions, so if you miss
+ functionality, come to the homepage, fork the project, and share your
+ thoughts.

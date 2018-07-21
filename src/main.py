@@ -112,12 +112,15 @@ class RpnApp(QApplication):
     def format_return(self, index=-1):
         if not self.stack:
             return ''
-        s, d = (self.format % self.stack[index]).split('.')
+        s, d = (self.format % self.stack[index] + '.').split('.')[:2]
+        if self.stack[index] != 0.0 and (s in ['-0', '0'] and d.replace('0', '') == '') or len(s + d) > 16:
+            format = self.format.replace('f', 'e')
+            s, d = (format % self.stack[index] + '.').split('.')[:2]
         out = []
         while len(s):
             out.insert(0, s[-3:])
             s = s[:-3]
-        return u' '.join(out) + '.' + d
+        return (u' '.join(out) + '.' + d).strip('.')
             
     @Slot(result=str)
     def get_display_value(self):
@@ -142,7 +145,11 @@ class RpnApp(QApplication):
         if len(self.stack) < 2:
             raise TooFewOperators()
         self.lastx = self.get_x()
-        self.stack.append(self.stack.pop() + self.lastx)
+        if self.operation_over:
+            self.stack.append(self.stack[-1] + self.lastx)
+            self.shift = 'f'
+        else:
+            self.stack.append(self.stack.pop() + self.lastx)
         return self.format_return()
 
     @Slot(result=str)
@@ -152,7 +159,11 @@ class RpnApp(QApplication):
         if len(self.stack) < 2:
             raise TooFewOperators()
         self.lastx = self.get_x()
-        self.stack.append(self.stack.pop() - self.lastx)
+        if self.operation_over:
+            self.stack.append(self.lastx - self.stack[-1])
+            self.shift = 'f'
+        else:
+            self.stack.append(self.stack.pop() - self.lastx)
         return self.format_return()
 
     @Slot(result=str)
@@ -162,7 +173,25 @@ class RpnApp(QApplication):
         if len(self.stack) < 2:
             raise TooFewOperators()
         self.lastx = self.get_x()
-        self.stack.append(self.stack.pop() * self.lastx)
+        if self.operation_over:
+            self.stack.append(self.lastx * self.stack[-1])
+            self.shift = 'f'
+        else:
+            self.stack.append(self.stack.pop() * self.lastx)
+        return self.format_return()
+    
+    @Slot(result=str)
+    def divide(self):
+        "Divide two digits"
+        self.stop_typing()
+        if len(self.stack) < 2:
+            raise TooFewOperators()
+        self.lastx = self.get_x()
+        if self.operation_over:
+            self.stack.append(self.lastx / self.stack[-1])
+            self.shift = 'f'
+        else:
+            self.stack.append(self.stack.pop() / self.lastx)
         return self.format_return()
 
     @Slot(result=str)
@@ -173,16 +202,6 @@ class RpnApp(QApplication):
     @Slot(result=str)
     def get_hyp_mode(self):
         return {True: 'hyp', False: ''}[self.hyp_mode]
-    
-    @Slot(result=str)
-    def divide(self):
-        "Divide two digits"
-        self.stop_typing()
-        if len(self.stack) < 2:
-            raise TooFewOperators()
-        self.lastx = self.get_x()
-        self.stack.append(self.stack.pop() / self.lastx)
-        return self.format_return()
 
     @Slot(str, result=str)
     def shift_status(self, toggle):
@@ -244,6 +263,7 @@ class RpnApp(QApplication):
     def execute(self, name):
         if name not in ['Enter', u"⬅"]:
             self.stop_typing()
+        self.operation_over = (self.shift != '')
         self.shift = ''
         name = {'%': 'take_percent',
                 '%T': 'percent_of_total',
@@ -302,6 +322,8 @@ class RpnApp(QApplication):
     def factorial(self):
         if len(self.stack) < 1:
             raise TooFewOperators()
+        if self.stack[-1] > 171:
+            raise OverflowError()
         self.lastx = self.stack.pop()
         self.stack.append(math.factorial(self.lastx))
         return self.format_return()
@@ -428,6 +450,19 @@ class RpnApp(QApplication):
         self.lastx = self.stack.pop()
         total = self.stack[-1]
         self.stack.append(100.0 * (self.lastx - total) / total)
+        return self.format_return()
+        
+    def solve(self):
+        "second degree equation, enter c, b, a and solve"
+        if len(self.stack) < 3:
+            raise TooFewOperators()
+        a = self.lastx = self.stack.pop()
+        b = self.stack.pop()
+        c = self.stack.pop()
+        beta = -b / 2 / a
+        delta = beta * beta - c / a
+        self.stack.append(beta - math.sqrt(delta))
+        self.stack.append(beta + math.sqrt(delta))
         return self.format_return()
     
     def stack_up(self):
