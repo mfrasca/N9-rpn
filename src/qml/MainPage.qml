@@ -136,7 +136,7 @@ Page {
         stats_count.text = app.get_stats_count()
         hyp_mode_status.text = app.get_hyp_mode()
         display_y.text = app.format_y()
-        display_value.text = app.format_x()
+        // display_value.text = app.format_x()
     }
     
     Row {
